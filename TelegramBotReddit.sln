@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBotForReddit.Core", "TelegramBotForReddit.Core\TelegramBotForReddit.Core.csproj", "{AA28C206-A8AD-46CA-8EFD-0F8FE6133084}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBotForReddit.Database", "TelegramBotForReddit.Database\TelegramBotForReddit.Database.csproj", "{EFFE9C70-0F47-4697-9817-26C1938AFA98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBotForReddit", "TelegramBotForReddit\TelegramBotForReddit.csproj", "{BC400920-9BD2-4BA8-9BD5-BEA3D3053E3E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AA28C206-A8AD-46CA-8EFD-0F8FE6133084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA28C206-A8AD-46CA-8EFD-0F8FE6133084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA28C206-A8AD-46CA-8EFD-0F8FE6133084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA28C206-A8AD-46CA-8EFD-0F8FE6133084}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFFE9C70-0F47-4697-9817-26C1938AFA98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFFE9C70-0F47-4697-9817-26C1938AFA98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFFE9C70-0F47-4697-9817-26C1938AFA98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFFE9C70-0F47-4697-9817-26C1938AFA98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC400920-9BD2-4BA8-9BD5-BEA3D3053E3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC400920-9BD2-4BA8-9BD5-BEA3D3053E3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC400920-9BD2-4BA8-9BD5-BEA3D3053E3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC400920-9BD2-4BA8-9BD5-BEA3D3053E3E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
