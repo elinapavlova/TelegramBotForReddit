@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.Extensions.Options;
 using Reddit;
 using Reddit.Controllers;
 using TelegramBotForReddit.Core.Options;
@@ -15,13 +16,13 @@ namespace TelegramBotForReddit.Core.Services.Reddit
         
         public RedditService
         (
-            AppOptions options, 
+            IOptions<AppOptions> options, 
             IHttpClientFactory clientFactory
         )
         {
-            _appRefreshToken = options.RedditRefreshToken;
-            _appId = options.RedditId;
-            _appSecret = options.RedditSecret;
+            _appRefreshToken = options.Value.RedditRefreshToken;
+            _appId = options.Value.RedditId;
+            _appSecret = options.Value.RedditSecret;
             _clientFactory = clientFactory;
         }
         public List<Subreddit> GetSubreddits(string category)

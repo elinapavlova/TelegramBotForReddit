@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -24,16 +25,16 @@ namespace TelegramBotForReddit.Core.Services.Telegram
 
         public TelegramService
         (
-            AppOptions options,
-            CommandsOptions commandsOptions,
+            IOptions<AppOptions> options,
+            IOptions<CommandsOptions> commandsOptions,
             IRedditService redditService,
             IUserService userService,
             IMapper mapper,
             IUserSubscribeService userSubscribeService
         )
         {
-            _botToken = options.BotToken;
-            _commands = new CommandsStruct(commandsOptions, redditService, userService, mapper, userSubscribeService)
+            _botToken = options.Value.BotToken;
+            _commands = new CommandsStruct(commandsOptions.Value, redditService, userService, mapper, userSubscribeService)
                 .CommandList;
         }
 

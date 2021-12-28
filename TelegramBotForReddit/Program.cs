@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using NLog.Web;
@@ -15,7 +16,7 @@ using TelegramBotForReddit.Core.Services.UserSubscribe;
 
 namespace TelegramBotForReddit
 {
-    static class Program
+    internal static class Program
     {
         private static IUserSubscribeService _userSubscribeService;
         private static Logger _logger;
@@ -34,9 +35,9 @@ namespace TelegramBotForReddit
                 startup.ConfigureServices(services);
 
                 IServiceProvider serviceProvider = services.BuildServiceProvider();
+                _appOptions = startup.Configuration.GetSection(AppOptions.App).Get<AppOptions>();
                 var telegramService = serviceProvider.GetService<ITelegramService>();
                 _userSubscribeService = serviceProvider.GetService<IUserSubscribeService>();
-                _appOptions = serviceProvider.GetService<AppOptions>();
                 _bot = telegramService.CreateBot();
 
                 using var cts = new CancellationTokenSource();

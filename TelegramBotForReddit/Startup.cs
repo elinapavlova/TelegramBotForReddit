@@ -23,21 +23,16 @@ namespace TelegramBotForReddit
             Configuration = ConfigurationBuilder.Build();
         }
 
-        private IConfiguration Configuration { get; }
+        public IConfiguration Configuration { get; }
         
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<AppOptions>(Configuration.GetSection(AppOptions.App));
-            var appOptions = Configuration.GetSection(AppOptions.App).Get<AppOptions>();
-            services.AddSingleton(appOptions);
-            
             services.Configure<CommandsOptions>(Configuration.GetSection(CommandsOptions.Command));
-            var commandsOptions = Configuration.GetSection(CommandsOptions.Command).Get<CommandsOptions>();
-            services.AddSingleton(commandsOptions);
 
             services.AddHttpClient<IRedditService, RedditService>("RedditClient", client =>
             {
-                client.BaseAddress = new Uri(appOptions.RedditBaseAddress);
+                client.BaseAddress = new Uri(Configuration["App:RedditBaseAddress"]);
             });
             
             var mapperConfig = new MapperConfiguration(mc =>
