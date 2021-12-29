@@ -42,8 +42,8 @@ namespace TelegramBotForReddit
             var mapper = mapperConfig.CreateMapper();
             services.AddSingleton(mapper);
             
-            var connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connection,  
+            var connection = Configuration.GetConnectionString("SQLiteConnection");
+            services.AddDbContext<AppDbContext>(options => options.UseSqlite(connection, 
                 x => x.MigrationsAssembly("TelegramBotForReddit.Database")));
 
             services.AddScoped<IUserRepository, UserRepository>();
