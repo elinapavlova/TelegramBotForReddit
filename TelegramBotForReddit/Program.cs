@@ -43,8 +43,8 @@ namespace TelegramBotForReddit
                 
                 var services = ConfigureServices();
                 
-                var telegramService = services.GetService<ITelegramService>();
                 _appOptions = _configuration.GetSection(AppOptions.App).Get<AppOptions>();
+                var telegramService = services.GetService<ITelegramService>();
                 _userSubscribeService = services.GetService<IUserSubscribeService>();
                 _bot = telegramService.CreateBot();
 
@@ -99,30 +99,33 @@ namespace TelegramBotForReddit
         private static ServiceProvider ConfigureServices()
         {
             var servicesProvider = new ServiceCollection();
+            
             var connection = _configuration.GetConnectionString("SQLiteConnection");
+            servicesProvider.AddDbContext<AppDbContext>(options => options.UseSqlite(connection,
+                x => x.MigrationsAssembly("TelegramBotForReddit.Database")));
+            
             var mapperConfig = new MapperConfiguration(mc =>
             {
                 mc.AddProfile(new AppProfile());
             });
             var mapper = mapperConfig.CreateMapper();
 
+            servicesProvider.AddHttpClient<IRedditService, RedditService>("RedditClient", client =>
+            {
+                client.BaseAddress = new Uri(_configuration["App:RedditBaseAddress"]);
+            });
+            
             servicesProvider
                 .AddLogging()
                 .AddSingleton(mapper)
                 .Configure<AppOptions>(_configuration.GetSection(AppOptions.App))
                 .Configure<CommandsOptions>(_configuration.GetSection(CommandsOptions.Command))
-                .AddDbContext<AppDbContext>(options => options.UseSqlite(connection, 
-                    x => x.MigrationsAssembly("TelegramBotForReddit.Database")))
                 .AddScoped<IUserRepository, UserRepository>()
                 .AddScoped<IUserSubscribeRepository, UserSubscribeRepository>()
-                .AddScoped<ITelegramService, TelegramService>()
                 .AddScoped<IRedditService, RedditService>()
+                .AddScoped<ITelegramService, TelegramService>()
                 .AddScoped<IUserService, UserService>()
-                .AddScoped<IUserSubscribeService, UserSubscribeService>()
-                .AddHttpClient<IRedditService, RedditService>("RedditClient", client =>
-                {
-                    client.BaseAddress = new Uri(_configuration["App:RedditBaseAddress"]);
-                });
+                .AddScoped<IUserSubscribeService, UserSubscribeService>();
 
             return servicesProvider.BuildServiceProvider();
         }
