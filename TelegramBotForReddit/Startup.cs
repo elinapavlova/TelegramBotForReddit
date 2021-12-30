@@ -30,6 +30,8 @@ namespace TelegramBotForReddit
             services.Configure<AppOptions>(Configuration.GetSection(AppOptions.App));
             services.Configure<CommandsOptions>(Configuration.GetSection(CommandsOptions.Command));
 
+            services.AddLogging();
+            
             services.AddHttpClient<IRedditService, RedditService>("RedditClient", client =>
             {
                 client.BaseAddress = new Uri(Configuration["App:RedditBaseAddress"]);

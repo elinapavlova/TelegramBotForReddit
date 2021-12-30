@@ -4,6 +4,8 @@
 *.userosscache
 *.sln.docstates
 
+redditbotdb
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

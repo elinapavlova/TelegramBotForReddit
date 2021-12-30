@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,11 +26,9 @@ namespace TelegramBotForReddit
         
         public static async Task Main()
         {
-            const string path = "";
-            _logger = NLogBuilder.ConfigureNLog(path).GetCurrentClassLogger();
-
             try
             {
+                _logger = NLogBuilder.ConfigureNLog(Path.GetFullPath("nlog.config")).GetCurrentClassLogger();
                 var startup = new Startup();
                 IServiceCollection services = new ServiceCollection();
                 startup.ConfigureServices(services);

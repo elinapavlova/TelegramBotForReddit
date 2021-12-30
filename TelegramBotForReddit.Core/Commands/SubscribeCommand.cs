@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using AutoMapper;
+using NLog;
 using Telegram.Bot;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
@@ -16,6 +17,7 @@ namespace TelegramBotForReddit.Core.Commands
         private readonly IUserService _userService;
         private readonly IUserSubscribeService _userSubscribeService;
         private readonly IMapper _mapper;
+        private readonly ILogger _logger;
         
         public SubscribeCommand
         (
@@ -31,6 +33,7 @@ namespace TelegramBotForReddit.Core.Commands
             _userService = userService;
             _userSubscribeService = userSubscribeService;
             _mapper = mapper;
+            _logger = LogManager.GetLogger("");
         }
 
         public override string Name { get; init; }
@@ -56,6 +59,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return await client.SendTextMessageAsync(message.Chat.Id, $"Вы уже подписаны на {subredditName}");
 
             _mapper.Map<UserSubscribeDto>(await _userSubscribeService.Subscribe(user.Id, subredditName));
+            _logger.Info($"user {user.Id} subscribed {subredditName}");
             return await client.SendTextMessageAsync (message.Chat.Id, $"Подписка на {subredditName} подтверждена"); 
         }
     }

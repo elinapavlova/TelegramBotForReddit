@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Options;
+using NLog;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
@@ -22,7 +23,8 @@ namespace TelegramBotForReddit.Core.Services.Telegram
         private static List<BaseCommand> _commands;
         private readonly string _botToken;
         private static TelegramBotClient _bot;
-
+        private readonly ILogger _logger;
+        
         public TelegramService
         (
             IOptions<AppOptions> options,
@@ -36,6 +38,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             _botToken = options.Value.BotToken;
             _commands = new CommandsStruct(commandsOptions.Value, redditService, userService, mapper, userSubscribeService)
                 .CommandList;
+            _logger = LogManager.GetLogger("");
         }
 
         public TelegramBotClient CreateBot()
@@ -62,14 +65,22 @@ namespace TelegramBotForReddit.Core.Services.Telegram
         {
             try
             {
-                var handler = update.Type switch
+                switch (update.Type)
                 {
-                    UpdateType.Message => BotOnMessageReceived(botClient, update.Message),
-                    _                  => botClient.SendTextMessageAsync(update.Message.Chat.Id, "Команда не обнаружена", 
-                                                cancellationToken: cancellationToken)
-                };
-                
-                await handler;
+                    case UpdateType.Message :
+                        await BotOnMessageReceived(botClient, update.Message);
+                        break;
+                    
+                    case UpdateType.MyChatMember :
+                        if (update.MyChatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
+                            _logger.Info($"user {update.MyChatMember.From.Id} stopped bot");
+                        break;
+                        
+                    default :
+                        await botClient.SendTextMessageAsync(update.Message.Chat.Id, "Команда не обнаружена",
+                            cancellationToken: cancellationToken);
+                        break;
+                }
             }
             catch (Exception exception)
             {
@@ -87,9 +98,12 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                 // Отделение первого слова (команды)
                 var messageCommand = message.Text.Split(' ').FirstOrDefault();
                 var isExistingCommand = _commands.Any(comm => comm.Contains(messageCommand));
-                
+
                 if (!isExistingCommand)
+                {
                     await botClient.SendTextMessageAsync(message.Chat.Id, "Команда не обнаружена");
+                    return;
+                }
 
                 var command = _commands.First(c => c.Name == messageCommand);
                 await command.Execute(message, botClient as TelegramBotClient);
