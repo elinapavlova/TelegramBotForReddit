@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using AutoMapper;
-using NLog;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
@@ -15,21 +15,22 @@ namespace TelegramBotForReddit.Core.Commands
         private readonly IUserService _userService;
         private readonly IUserSubscribeService _userSubscribeService;
         private readonly IMapper _mapper;
-        private readonly ILogger _logger;
+        private readonly ILogger<UnsubscribeCommand> _logger;
         
         public UnsubscribeCommand
         (
             string commandName,
             IUserService userService, 
             IUserSubscribeService userSubscribeService,
-            IMapper mapper
+            IMapper mapper,
+            ILogger<UnsubscribeCommand> logger
         ) 
             : base(commandName)
         {
             _userService = userService;
             _userSubscribeService = userSubscribeService;
             _mapper = mapper;
-            _logger = LogManager.GetLogger("");
+            _logger = logger;
         }
 
         public override string Name { get; init; }
@@ -52,7 +53,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return await client.SendTextMessageAsync(message.Chat.Id, $"Вы не подписаны на {subredditName}");
 
             _mapper.Map<UserSubscribeDto>(await _userSubscribeService.Unsubscribe(userSubscribe.Id));
-            _logger.Info($"user {message.From.Id} unsubscribed {subredditName}");
+            _logger.LogInformation($"user {message.From.Id} unsubscribed {subredditName}");
             return await client.SendTextMessageAsync (message.Chat.Id, $"Подписка на {subredditName} отменена"); 
         }
     }

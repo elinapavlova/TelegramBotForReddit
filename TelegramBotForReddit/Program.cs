@@ -7,12 +7,14 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Web;
 using Reddit;
 using Reddit.Controllers.EventArgs;
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
+using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Options;
 using TelegramBotForReddit.Core.Profiles;
 using TelegramBotForReddit.Core.Services.Reddit;
@@ -23,6 +25,7 @@ using TelegramBotForReddit.Database;
 using TelegramBotForReddit.Database.Repositories.User;
 using TelegramBotForReddit.Database.Repositories.UserSubscribe;
 using ConfigurationBuilder = TelegramBotForReddit.Core.Configurations.ConfigurationBuilder;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace TelegramBotForReddit
 {
@@ -115,8 +118,11 @@ namespace TelegramBotForReddit
                 client.BaseAddress = new Uri(_configuration["App:RedditBaseAddress"]);
             });
             
-            servicesProvider
-                .AddLogging()
+            servicesProvider.AddLogging(logger =>
+                {
+                    logger.AddNLog("nlog.config");
+                    logger.AddFilter("Microsoft", LogLevel.Warning);
+                })
                 .AddSingleton(mapper)
                 .Configure<AppOptions>(_configuration.GetSection(AppOptions.App))
                 .Configure<CommandsOptions>(_configuration.GetSection(CommandsOptions.Command))
@@ -125,7 +131,8 @@ namespace TelegramBotForReddit
                 .AddScoped<IRedditService, RedditService>()
                 .AddScoped<ITelegramService, TelegramService>()
                 .AddScoped<IUserService, UserService>()
-                .AddScoped<IUserSubscribeService, UserSubscribeService>();
+                .AddScoped<IUserSubscribeService, UserSubscribeService>()
+                .AddScoped<Commands>();
 
             return servicesProvider.BuildServiceProvider();
         }

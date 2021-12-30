@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLog;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Options;
-using TelegramBotForReddit.Core.Services.Reddit;
-using TelegramBotForReddit.Core.Services.User;
-using TelegramBotForReddit.Core.Services.UserSubscribe;
 
 namespace TelegramBotForReddit.Core.Services.Telegram
 {
@@ -23,22 +19,18 @@ namespace TelegramBotForReddit.Core.Services.Telegram
         private static List<BaseCommand> _commands;
         private readonly string _botToken;
         private static TelegramBotClient _bot;
-        private readonly ILogger _logger;
+        private readonly ILogger<TelegramService> _logger;
         
         public TelegramService
         (
             IOptions<AppOptions> options,
-            IOptions<CommandsOptions> commandsOptions,
-            IRedditService redditService,
-            IUserService userService,
-            IMapper mapper,
-            IUserSubscribeService userSubscribeService
+            ILogger<TelegramService> logger,
+            Commands.Base.Commands commands
         )
         {
             _botToken = options.Value.BotToken;
-            _commands = new CommandsStruct(commandsOptions.Value, redditService, userService, mapper, userSubscribeService)
-                .CommandList;
-            _logger = LogManager.GetLogger("");
+            _commands = commands.CommandList;
+            _logger = logger;
         }
 
         public TelegramBotClient CreateBot()
@@ -73,7 +65,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                     
                     case UpdateType.MyChatMember :
                         if (update.MyChatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
-                            _logger.Info($"user {update.MyChatMember.From.Id} stopped bot");
+                            _logger.LogInformation($"user {update.MyChatMember.From.Id} stopped bot");
                         break;
                         
                     default :
