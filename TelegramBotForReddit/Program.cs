@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -12,8 +14,15 @@ using Reddit.Controllers.EventArgs;
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
 using TelegramBotForReddit.Core.Options;
+using TelegramBotForReddit.Core.Profiles;
+using TelegramBotForReddit.Core.Services.Reddit;
 using TelegramBotForReddit.Core.Services.Telegram;
+using TelegramBotForReddit.Core.Services.User;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
+using TelegramBotForReddit.Database;
+using TelegramBotForReddit.Database.Repositories.User;
+using TelegramBotForReddit.Database.Repositories.UserSubscribe;
+using ConfigurationBuilder = TelegramBotForReddit.Core.Configurations.ConfigurationBuilder;
 
 namespace TelegramBotForReddit
 {
@@ -23,20 +32,20 @@ namespace TelegramBotForReddit
         private static Logger _logger;
         private static ITelegramBotClient _bot;
         private static AppOptions _appOptions;
+        private static IConfiguration _configuration;
         
         public static async Task Main()
         {
             try
             {
+                _configuration = ConfigurationBuilder.Build();
                 _logger = NLogBuilder.ConfigureNLog(Path.GetFullPath("nlog.config")).GetCurrentClassLogger();
-                var startup = new Startup();
-                IServiceCollection services = new ServiceCollection();
-                startup.ConfigureServices(services);
-
-                IServiceProvider serviceProvider = services.BuildServiceProvider();
-                _appOptions = startup.Configuration.GetSection(AppOptions.App).Get<AppOptions>();
-                var telegramService = serviceProvider.GetService<ITelegramService>();
-                _userSubscribeService = serviceProvider.GetService<IUserSubscribeService>();
+                
+                var services = ConfigureServices();
+                
+                var telegramService = services.GetService<ITelegramService>();
+                _appOptions = _configuration.GetSection(AppOptions.App).Get<AppOptions>();
+                _userSubscribeService = services.GetService<IUserSubscribeService>();
                 _bot = telegramService.CreateBot();
 
                 using var cts = new CancellationTokenSource();
@@ -85,6 +94,37 @@ namespace TelegramBotForReddit
                         $"{post.Title}\r\n" +
                         $"{_appOptions.RedditBaseAddress}{post.Permalink}");
             }
+        }
+
+        private static ServiceProvider ConfigureServices()
+        {
+            var servicesProvider = new ServiceCollection();
+            var connection = _configuration.GetConnectionString("SQLiteConnection");
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new AppProfile());
+            });
+            var mapper = mapperConfig.CreateMapper();
+
+            servicesProvider
+                .AddLogging()
+                .AddSingleton(mapper)
+                .Configure<AppOptions>(_configuration.GetSection(AppOptions.App))
+                .Configure<CommandsOptions>(_configuration.GetSection(CommandsOptions.Command))
+                .AddDbContext<AppDbContext>(options => options.UseSqlite(connection, 
+                    x => x.MigrationsAssembly("TelegramBotForReddit.Database")))
+                .AddScoped<IUserRepository, UserRepository>()
+                .AddScoped<IUserSubscribeRepository, UserSubscribeRepository>()
+                .AddScoped<ITelegramService, TelegramService>()
+                .AddScoped<IRedditService, RedditService>()
+                .AddScoped<IUserService, UserService>()
+                .AddScoped<IUserSubscribeService, UserSubscribeService>()
+                .AddHttpClient<IRedditService, RedditService>("RedditClient", client =>
+                {
+                    client.BaseAddress = new Uri(_configuration["App:RedditBaseAddress"]);
+                });
+
+            return servicesProvider.BuildServiceProvider();
         }
     }
 }
