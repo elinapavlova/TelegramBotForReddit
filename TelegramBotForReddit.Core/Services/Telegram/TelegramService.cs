@@ -11,6 +11,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Options;
+using TelegramBotForReddit.Core.Services.UserSubscribe;
 
 namespace TelegramBotForReddit.Core.Services.Telegram
 {
@@ -20,17 +21,20 @@ namespace TelegramBotForReddit.Core.Services.Telegram
         private readonly string _botToken;
         private static TelegramBotClient _bot;
         private readonly ILogger<TelegramService> _logger;
+        private readonly IUserSubscribeService _userSubscribeService;
         
         public TelegramService
         (
             IOptions<AppOptions> options,
             ILogger<TelegramService> logger,
-            Commands.Base.Commands commands
+            Commands.Base.Commands commands,
+            IUserSubscribeService userSubscribeService
         )
         {
             _botToken = options.Value.BotToken;
             _commands = commands.CommandList;
             _logger = logger;
+            _userSubscribeService = userSubscribeService;
         }
 
         public TelegramBotClient CreateBot()
@@ -64,8 +68,10 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                         break;
                     
                     case UpdateType.MyChatMember :
-                        if (update.MyChatMember.NewChatMember.Status == ChatMemberStatus.Kicked)
-                            _logger.LogInformation($"user {update.MyChatMember.From.Id} stopped bot");
+                        if (update.MyChatMember.NewChatMember.Status != ChatMemberStatus.Kicked) 
+                            break;
+                        await _userSubscribeService.UnsubscribeAll(update.MyChatMember.From.Id);
+                        _logger.LogInformation($"user {update.MyChatMember.From.Id} stopped bot");
                         break;
                         
                     default :

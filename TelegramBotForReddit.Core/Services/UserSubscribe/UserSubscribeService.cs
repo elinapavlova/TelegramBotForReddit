@@ -49,6 +49,16 @@ namespace TelegramBotForReddit.Core.Services.UserSubscribe
             return result;
         }
 
+        public async Task UnsubscribeAll(long userId)
+        {
+            var subscribes = await _userSubscribeRepository.GetByUserId(userId);
+            foreach (var subscribe in subscribes)
+            {
+                subscribe.DateUnsubscribed = DateTime.Now;
+                await _userSubscribeRepository.Update(subscribe);
+            }
+        }
+
         public async Task<UserSubscribeDto> GetActual(long userId, string subredditName)
         {
             var result = _mapper.Map<UserSubscribeDto>(await _userSubscribeRepository.Get(userId, subredditName, true));

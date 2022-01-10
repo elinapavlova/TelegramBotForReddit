@@ -9,6 +9,7 @@ namespace TelegramBotForReddit.Core.Services.UserSubscribe
     {
         Task<UserSubscribeDto> Subscribe(long userId, string subredditName);
         Task<UserSubscribeDto> Unsubscribe(Guid id);
+        Task UnsubscribeAll(long userId);
         Task<UserSubscribeDto> GetActual(long userId, string subredditName);
         Task<List<UserSubscribeDto>> GetByUserId(long userId);
         Task<List<UserSubscribeDto>> GetBySubredditName(string name);
