@@ -75,8 +75,7 @@ namespace TelegramBotForReddit
             }
             catch (Exception e)
             {
-                _logger.Error(e, "Stopped program because of exception");
-                Console.WriteLine(e.Message);
+                _logger.Error(e);
             }
             finally
             {
