@@ -32,16 +32,15 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
 
         public async Task<UserSubscribeModel> Get(long userId, string subredditName, bool isActual)
         {
-            if (isActual)
-                return await _context.UserSubscribes.FirstOrDefaultAsync(us => 
-                        us.UserId == userId 
-                        && us.SubredditName == subredditName
-                        && us.DateUnsubscribed == null);
-            
-            return await _context.UserSubscribes.FirstOrDefaultAsync(us => 
-                us.UserId == userId 
-                && us.SubredditName == subredditName
-                && us.DateUnsubscribed != null);
+            return isActual
+                ? await _context.UserSubscribes.FirstOrDefaultAsync(us =>
+                    us.UserId == userId
+                    && us.SubredditName == subredditName
+                    && us.DateUnsubscribed == null)
+                : await _context.UserSubscribes.FirstOrDefaultAsync(us =>
+                    us.UserId == userId
+                    && us.SubredditName == subredditName
+                    && us.DateUnsubscribed != null);
         }
 
         public async Task<List<UserSubscribeModel>> GetByUserId(long userId)
@@ -53,9 +52,9 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
             => await _context.UserSubscribes.FirstOrDefaultAsync(us => us.Id == id);
 
         public async Task<List<UserSubscribeModel>> GetBySubredditName(string name)
-            => await _context.UserSubscribes
-                .Where(u => u.SubredditName == name && u.DateUnsubscribed == null)
+            => _context.UserSubscribes
                 .AsNoTracking()
-                .ToListAsync();
+                .Where(u => u.SubredditName == name && u.DateUnsubscribed == null)
+                .ToList();
     }
 }
