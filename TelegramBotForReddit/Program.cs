@@ -8,13 +8,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NLog;
 using NLog.Web;
 using Reddit;
 using Reddit.Controllers.EventArgs;
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotForReddit.Core.Commands.Base;
+using TelegramBotForReddit.Core.Dto.RedditMedia;
 using TelegramBotForReddit.Core.Options;
 using TelegramBotForReddit.Core.Profiles;
 using TelegramBotForReddit.Core.Services.Reddit;
@@ -48,6 +51,7 @@ namespace TelegramBotForReddit
                 
                 _appOptions = _configuration.GetSection(AppOptions.App).Get<AppOptions>();
                 var telegramService = services.GetService<ITelegramService>();
+                var redditService = services.GetService<IRedditService>();
                 _userSubscribeService = services.GetService<IUserSubscribeService>();
                 _bot = telegramService.CreateBot();
 
@@ -61,8 +65,8 @@ namespace TelegramBotForReddit
                 Console.WriteLine($"Start listening for @{me.Username}");
                 
                 var reddit = new RedditClient(_appOptions.RedditId, _appOptions.RedditRefreshToken, _appOptions.RedditSecret);
-
-                foreach (var subreddit in reddit.GetSubreddits("popular")
+                
+                foreach (var subreddit in redditService.GetSubreddits("popular")
                     .Select(sub => reddit.Subreddit(sub.Name)))
                 {
                     subreddit.Posts.GetNew();  
@@ -90,12 +94,50 @@ namespace TelegramBotForReddit
                 var users = await _userSubscribeService.GetBySubredditName(post.Subreddit);
 
                 foreach (var user in users)
-                    await _bot.SendTextMessageAsync(user.UserId, 
-                        $"{post.Subreddit}\r\n" +
-                        $"{post.Created.ToLocalTime()}\r\n" +
-                        $"{post.Title}\r\n" +
-                        $"{_appOptions.RedditBaseAddress}{post.Permalink}");
+                {
+                    var preview = post.Listing.Preview;
+                    Media media = null;
+                
+                    if (preview != null)
+                    {
+                        media = JsonConvert.DeserializeObject<Media>(preview.ToString());
+                        media.Url = post.Permalink;
+                    }
+                    
+                    var keyboard = GetInlineKeyboard($"{_appOptions.RedditBaseAddress}{post.Permalink}", media);
+                    
+                    if (media != null)
+                        await _bot.SendPhotoAsync(user.UserId, 
+                            $"{media.Images.First().Source.Url}", 
+                            $"{post.Subreddit}\r\n{post.Title}\r\n ",
+                            replyMarkup: keyboard);
+                    else 
+                        await _bot.SendTextMessageAsync(user.UserId, 
+                            $"{post.Subreddit}\r\n{post.Title}\r\n", 
+                            replyMarkup: keyboard );
+                }
             }
+        }
+
+        private static InlineKeyboardMarkup GetInlineKeyboard(string postUrl, Media media)
+        {
+            // Если нет контента или контент - картинка
+            return media == null || media.Enabled 
+                ? new InlineKeyboardMarkup(
+                    new[]
+                    {
+                        new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)}
+                    })
+                // Если видео
+                : new InlineKeyboardMarkup(
+                    new[]
+                    {
+                        new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)},
+                        new[]
+                        {
+                            InlineKeyboardButton.WithUrl("Посмотреть видео", "https://vrddit.com/" + media.Url)
+                        }
+                    });
         }
 
         private static ServiceProvider ConfigureServices()

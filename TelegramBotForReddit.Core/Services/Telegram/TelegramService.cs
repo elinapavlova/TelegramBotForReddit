@@ -9,6 +9,7 @@ using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Options;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
@@ -105,11 +106,36 @@ namespace TelegramBotForReddit.Core.Services.Telegram
 
                 var command = _commands.First(c => c.Name == messageCommand);
                 await command.Execute(message, botClient as TelegramBotClient);
+
+                var keyboard = GetReplyKeyboard();
+                await botClient.SendTextMessageAsync(message.Chat.Id, "Выберите следующее действие", replyMarkup: keyboard);
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        private static ReplyKeyboardMarkup GetReplyKeyboard()
+        {
+            var keyboard = new ReplyKeyboardMarkup();
+            var rows = new List<KeyboardButton[]>();
+            var columns = new List<KeyboardButton>();
+
+            foreach (var command in _commands)
+            {                
+                columns.Add(command.Name);
+                
+                if (_commands.IndexOf(command) % 2 == 0) 
+                    continue;
+                
+                rows.Add(columns.ToArray());
+                columns = new List<KeyboardButton>();
+            }
+
+            keyboard.Keyboard = rows.ToArray();
+            return keyboard;
         }
     }
 }
