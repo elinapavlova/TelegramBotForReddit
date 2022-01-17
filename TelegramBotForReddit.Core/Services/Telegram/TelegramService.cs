@@ -21,7 +21,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
         private static List<BaseCommand> _commands;
         private readonly string _botToken;
         private static TelegramBotClient _bot;
-        private readonly ILogger<TelegramService> _logger;
+        private static ILogger<TelegramService> _logger;
         private readonly IUserSubscribeService _userSubscribeService;
         
         public TelegramService
@@ -55,6 +55,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             };
 
             Console.WriteLine(errorMessage);
+            _logger.LogError($"Telegram API handling updates Error: {errorMessage}");
             return Task.CompletedTask;
         }
         
@@ -111,9 +112,9 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                 await botClient.SendTextMessageAsync(message.Chat.Id, "Выберите следующее действие", replyMarkup: keyboard);
 
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError($"Telegram API receiving message Error: {e.Message}");
             }
         }
 

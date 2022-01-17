@@ -14,6 +14,7 @@ using NLog.Web;
 using Reddit;
 using Reddit.Controllers.EventArgs;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotForReddit.Core.Commands.Base;
@@ -106,15 +107,25 @@ namespace TelegramBotForReddit
                     
                     var keyboard = GetInlineKeyboard($"{_appOptions.RedditBaseAddress}{post.Permalink}", media);
                     
-                    if (media != null)
-                        await _bot.SendPhotoAsync(user.UserId, 
-                            $"{media.Images.First().Source.Url}", 
-                            $"{post.Subreddit}\r\n{post.Title}\r\n ",
-                            replyMarkup: keyboard);
-                    else 
+                    try
+                    {
+                        if (media != null)
+                            await _bot.SendPhotoAsync(user.UserId,
+                                $"{media.Images.First().Source.Url}",
+                                $"{post.Subreddit}\r\n{post.Title}\r\n ",
+                                replyMarkup: keyboard);
+                        else
+                            await _bot.SendTextMessageAsync(user.UserId,
+                                $"{post.Subreddit}\r\n{post.Title}\r\n",
+                                replyMarkup: keyboard);
+                    }
+                    catch(ApiRequestException ex)
+                    {
                         await _bot.SendTextMessageAsync(user.UserId, 
-                            $"{post.Subreddit}\r\n{post.Title}\r\n", 
-                            replyMarkup: keyboard );
+                            $"{post.Subreddit}\r\n{post.Title}\r\n",
+                            replyMarkup: keyboard);
+                        _logger.Error($"Telegram API Error: {ex.ErrorCode}. {ex.Message}");
+                    }
                 }
             }
         }
