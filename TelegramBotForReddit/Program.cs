@@ -132,7 +132,7 @@ namespace TelegramBotForReddit
         // Если видео загружено на Reddit - перенаправлять на сервис для показа видео, иначе вернуть ссылку
         private static string MakeUrl(string domain, string url, string permalink)
             => domain == "v.redd.it" 
-                ? $"https://vrddit.com/{permalink}" 
+                ? $"https://vrddit.com{permalink}" 
                 : url;
 
         private static InlineKeyboardMarkup GetInlineKeyboard(string postUrl, Media media)
@@ -151,7 +151,7 @@ namespace TelegramBotForReddit
                         new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)},
                         new[]
                         {
-                            InlineKeyboardButton.WithUrl("Посмотреть видео", media.Url)
+                            InlineKeyboardButton.WithUrl("Перейти к ресурсу", media.Url)
                         }
                     });
         }
