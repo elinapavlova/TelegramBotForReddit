@@ -93,18 +93,17 @@ namespace TelegramBotForReddit
             foreach (var post in e.Added)
             {
                 var users = await _userSubscribeService.GetBySubredditName(post.Subreddit);
+                var preview = post.Listing.Preview;
+                Media media = null;
 
                 foreach (var user in users)
                 {
-                    var preview = post.Listing.Preview;
-                    Media media = null;
-                
                     if (preview != null)
                     {
                         media = JsonConvert.DeserializeObject<Media>(preview.ToString());
-                        media.Url = post.Permalink;
+                        media.Url = MakeUrl(post.Listing.Domain, post.Listing.URL, post.Permalink);
                     }
-                    
+
                     var keyboard = GetInlineKeyboard($"{_appOptions.RedditBaseAddress}{post.Permalink}", media);
                     
                     try
@@ -122,13 +121,19 @@ namespace TelegramBotForReddit
                     catch(ApiRequestException ex)
                     {
                         await _bot.SendTextMessageAsync(user.UserId, 
-                            $"{post.Subreddit}\r\n{post.Title}\r\n",
+                            $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n",
                             replyMarkup: keyboard);
                         _logger.Error($"Telegram API Error: {ex.ErrorCode}. {ex.Message}");
                     }
                 }
             }
         }
+
+        // Если видео загружено на Reddit - перенаправлять на сервис для показа видео, иначе вернуть ссылку
+        private static string MakeUrl(string domain, string url, string permalink)
+            => domain == "v.redd.it" 
+                ? $"https://vrddit.com/{permalink}" 
+                : url;
 
         private static InlineKeyboardMarkup GetInlineKeyboard(string postUrl, Media media)
         {
@@ -139,14 +144,14 @@ namespace TelegramBotForReddit
                     {
                         new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)}
                     })
-                // Если видео
+                // Если контент - видео
                 : new InlineKeyboardMarkup(
                     new[]
                     {
                         new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)},
                         new[]
                         {
-                            InlineKeyboardButton.WithUrl("Посмотреть видео", "https://vrddit.com/" + media.Url)
+                            InlineKeyboardButton.WithUrl("Посмотреть видео", media.Url)
                         }
                     });
         }
