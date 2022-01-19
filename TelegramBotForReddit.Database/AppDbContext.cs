@@ -29,7 +29,8 @@ namespace TelegramBotForReddit.Database
                     .WithMany(u => u.Subscribes)
                     .HasForeignKey(us => us.UserId);
             });
-            builder.Entity<UserSubscribeModel>().HasIndex(b => b.SubredditName).IsUnique();
+            
+            builder.Entity<UserSubscribeModel>().HasIndex(b => new {b.SubredditName, b.UserId}).IsUnique();
         }
     }
 }
