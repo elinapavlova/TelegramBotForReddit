@@ -1,4 +1,4 @@
-﻿namespace TelegramBotForReddit.Core.Dto.RedditMedia
+﻿namespace TelegramBotForReddit.Database.Models.RedditMedia
 {
     public class Source
     {

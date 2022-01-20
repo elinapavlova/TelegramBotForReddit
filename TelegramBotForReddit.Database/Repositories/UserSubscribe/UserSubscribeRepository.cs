@@ -52,9 +52,9 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
             => await _context.UserSubscribes.FirstOrDefaultAsync(us => us.Id == id);
 
         public async Task<List<UserSubscribeModel>> GetBySubredditName(string name)
-            => _context.UserSubscribes
+            => await _context.UserSubscribes
                 .AsNoTracking()
                 .Where(u => u.SubredditName == name && u.DateUnsubscribed == null)
-                .ToList();
+                .ToListAsync();
     }
 }

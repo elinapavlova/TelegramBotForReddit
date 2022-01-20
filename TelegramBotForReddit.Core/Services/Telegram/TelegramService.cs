@@ -5,14 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Reddit.Controllers;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotForReddit.Core.Commands.Base;
+using TelegramBotForReddit.Core.Dto.UserSubscribe;
 using TelegramBotForReddit.Core.Options;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
+using TelegramBotForReddit.Database.Models.RedditMedia;
 
 namespace TelegramBotForReddit.Core.Services.Telegram
 {
@@ -20,6 +23,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
     {
         private static List<BaseCommand> _commands;
         private readonly string _botToken;
+        private readonly string _redditBaseAddress;
         private static TelegramBotClient _bot;
         private static ILogger<TelegramService> _logger;
         private readonly IUserSubscribeService _userSubscribeService;
@@ -36,6 +40,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             _commands = commands.CommandList;
             _logger = logger;
             _userSubscribeService = userSubscribeService;
+            _redditBaseAddress = options.Value.RedditBaseAddress;
         }
 
         public TelegramBotClient CreateBot()
@@ -118,6 +123,30 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             }
         }
 
+        public async Task SendMessage(Media media, UserSubscribeDto user, Post post)
+        {
+            var keyboard = GetInlineKeyboard($"{_redditBaseAddress}{post.Permalink}", media);
+            try
+            {
+                if (media != null)
+                    await _bot.SendPhotoAsync(user.UserId,
+                        $"{media.Images.First().Source.Url}",
+                        $"{post.Subreddit}\r\n{post.Title}\r\n ",
+                        replyMarkup: keyboard);
+                else
+                    await _bot.SendTextMessageAsync(user.UserId,
+                        $"{post.Subreddit}\r\n{post.Title}\r\n",
+                        replyMarkup: keyboard);
+            }
+            catch(ApiRequestException ex)
+            {
+                await _bot.SendTextMessageAsync(user.UserId, 
+                    $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n",
+                    replyMarkup: keyboard);
+                _logger.LogError($"Telegram API Error: {ex.ErrorCode}. {ex.Message}");
+            }
+        }
+        
         private static ReplyKeyboardMarkup GetReplyKeyboard()
         {
             var keyboard = new ReplyKeyboardMarkup();
@@ -137,6 +166,27 @@ namespace TelegramBotForReddit.Core.Services.Telegram
 
             keyboard.Keyboard = rows.ToArray();
             return keyboard;
+        }
+        
+        public InlineKeyboardMarkup GetInlineKeyboard(string postUrl, Media media)
+        {
+            // Если нет контента или контент - картинка
+            return media == null || media.Enabled 
+                ? new InlineKeyboardMarkup(
+                    new[]
+                    {
+                        new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)}
+                    })
+                // Если контент - видео, ссылка, стрим и другое
+                : new InlineKeyboardMarkup(
+                    new[]
+                    {
+                        new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)},
+                        new[]
+                        {
+                            InlineKeyboardButton.WithUrl("Перейти к ресурсу", media.Url)
+                        }
+                    });
         }
     }
 }

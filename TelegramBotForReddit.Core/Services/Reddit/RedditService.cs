@@ -34,5 +34,11 @@ namespace TelegramBotForReddit.Core.Services.Reddit
             var subreddits = reddit.GetSubreddits(category);
             return subreddits;
         }
+        
+        // Если видео загружено на Reddit - перенаправлять на сервис для показа видео, иначе вернуть ссылку
+        public string MakeUrl(string domain, string url, string permalink)
+            => domain == "v.redd.it" 
+                ? $"https://vrddit.com{permalink}" 
+                : url;
     }
 }
