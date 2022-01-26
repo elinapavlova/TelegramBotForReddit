@@ -80,11 +80,6 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                         await _userSubscribeService.UnsubscribeAll(update.MyChatMember.From.Id);
                         _logger.LogInformation($"user {update.MyChatMember.From.Id} stopped bot");
                         break;
-                        
-                    default :
-                        await botClient.SendTextMessageAsync(update.Message.Chat.Id, "Команда не обнаружена",
-                            cancellationToken: cancellationToken);
-                        break;
                 }
             }
             catch (Exception exception)
@@ -114,12 +109,14 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                 await command.Execute(message, botClient as TelegramBotClient);
 
                 var keyboard = GetReplyKeyboard();
-                await botClient.SendTextMessageAsync(message.Chat.Id, "Выберите следующее действие", replyMarkup: keyboard);
+                await botClient.SendTextMessageAsync(message.Chat.Id, "⠀", replyMarkup: keyboard);
 
             }
             catch (Exception e)
             {
-                _logger.LogError($"Telegram API receiving message Error: {e.Message}");
+                // Игнорирование ошибки при отправке пустого сообщения с replyKeyboard
+                if (e.GetType() != typeof(ApiRequestException))
+                    _logger.LogError($"Telegram API receiving message Error: {e.Message}");
             }
         }
 

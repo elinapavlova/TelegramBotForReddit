@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Nito.AsyncEx;
 using TelegramBotForReddit.Database.Models;
 
 namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
@@ -10,6 +11,9 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
     public class UserSubscribeRepository : IUserSubscribeRepository
     {
         private readonly AppDbContext _context;
+        
+        // Блокировка получения записей
+        private readonly AsyncLock _mutex = new ();
 
         public UserSubscribeRepository(AppDbContext context)
         {
@@ -52,9 +56,15 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
             => await _context.UserSubscribes.FirstOrDefaultAsync(us => us.Id == id);
 
         public async Task<List<UserSubscribeModel>> GetBySubredditName(string name)
-            => await _context.UserSubscribes
-                .AsNoTracking()
-                .Where(u => u.SubredditName == name && u.DateUnsubscribed == null)
-                .ToListAsync();
+        {
+            List<UserSubscribeModel> result;
+            
+            using (await _mutex.LockAsync())
+                result = await _context.UserSubscribes
+                    .Where(us => us.SubredditName == name && us.DateUnsubscribed == null)
+                    .ToListAsync();
+            
+            return result;
+        }
     }
 }
