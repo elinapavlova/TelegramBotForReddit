@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using NLog;
+using NLog.Extensions.Logging;
 using NLog.Web;
 using Reddit;
 using Reddit.Controllers.EventArgs;
@@ -130,7 +131,7 @@ namespace TelegramBotForReddit
             
             servicesProvider.AddLogging(logger =>
                 {
-                    logger.AddNLog("nlog.config");
+                    ConfigureExtensions.AddNLog(logger, "nlog.config");
                     logger.AddFilter("Microsoft", LogLevel.Warning);
                 })
                 .AddSingleton(mapper)
