@@ -55,10 +55,13 @@ namespace TelegramBotForReddit
                 _telegramService = services.GetService<ITelegramService>();
                 _redditService = services.GetService<IRedditService>();
                 _userSubscribeService = services.GetService<IUserSubscribeService>();
-                _bot = _telegramService.CreateBot();
+
+                if (_telegramService == null || _redditService == null)
+                    throw new Exception("App error: some services not found.");
 
                 using var cts = new CancellationTokenSource();
                 
+                _bot = _telegramService.CreateBot();
                 _bot.StartReceiving(
                     new DefaultUpdateHandler(_telegramService.HandleUpdateAsync, _telegramService.HandleErrorAsync),
                     cts.Token);
@@ -81,7 +84,7 @@ namespace TelegramBotForReddit
             }
             catch (Exception e)
             {
-                _logger.Error(e);
+                _logger.Error($"App error: {e.Message}");
             }
             finally
             {
