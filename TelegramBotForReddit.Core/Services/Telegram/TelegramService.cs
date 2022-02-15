@@ -109,14 +109,12 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                 await command.Execute(message, botClient as TelegramBotClient);
 
                 var keyboard = GetReplyKeyboard();
-                await botClient.SendTextMessageAsync(message.Chat.Id, "⠀", replyMarkup: keyboard);
+                await botClient.SendTextMessageAsync(message.Chat.Id, "Выбрать команду:", replyMarkup: keyboard);
 
             }
             catch (Exception e)
             {
-                // Игнорирование ошибки при отправке пустого сообщения с replyKeyboard
-                if (e.GetType() != typeof(ApiRequestException))
-                    _logger.LogError($"Telegram API receiving message Error: {e.Message}");
+                _logger.LogError($"Telegram API receiving message Error: {e.Message}");
             }
         }
 
@@ -149,12 +147,14 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             var keyboard = new ReplyKeyboardMarkup();
             var rows = new List<KeyboardButton[]>();
             var columns = new List<KeyboardButton>();
+            var lastIndex = _commands.Count - 1;
 
             foreach (var command in _commands)
-            {                
+            {
+                var index = _commands.IndexOf(command);
                 columns.Add(command.Name);
                 
-                if (_commands.IndexOf(command) % 2 == 0) 
+                if (index % 2 == 0 && index != lastIndex) 
                     continue;
                 
                 rows.Add(columns.ToArray());
