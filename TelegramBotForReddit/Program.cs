@@ -19,12 +19,14 @@ using Telegram.Bot.Extensions.Polling;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Options;
 using TelegramBotForReddit.Core.Profiles;
+using TelegramBotForReddit.Core.Services.Administrator;
 using TelegramBotForReddit.Core.Services.Reddit;
 using TelegramBotForReddit.Core.Services.Telegram;
 using TelegramBotForReddit.Core.Services.User;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
 using TelegramBotForReddit.Database;
 using TelegramBotForReddit.Database.Models.RedditMedia;
+using TelegramBotForReddit.Database.Repositories.Administrator;
 using TelegramBotForReddit.Database.Repositories.User;
 using TelegramBotForReddit.Database.Repositories.UserSubscribe;
 using ConfigurationBuilder = TelegramBotForReddit.Core.Configurations.ConfigurationBuilder;
@@ -142,10 +144,12 @@ namespace TelegramBotForReddit
                 .Configure<CommandsOptions>(_configuration.GetSection(CommandsOptions.Command))
                 .AddScoped<IUserRepository, UserRepository>()
                 .AddScoped<IUserSubscribeRepository, UserSubscribeRepository>()
+                .AddScoped<IAdministratorRepository, AdministratorRepository>()
                 .AddScoped<IRedditService, RedditService>()
                 .AddScoped<ITelegramService, TelegramService>()
                 .AddScoped<IUserService, UserService>()
                 .AddScoped<IUserSubscribeService, UserSubscribeService>()
+                .AddScoped<IAdministratorService, AdministratorService>()
                 .AddScoped<Commands>();
 
             return servicesProvider.BuildServiceProvider();
