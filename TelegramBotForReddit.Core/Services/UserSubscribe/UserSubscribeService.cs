@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoMapper;
+using TelegramBotForReddit.Core.Dto.Subreddit;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
 using TelegramBotForReddit.Database.Models;
 using TelegramBotForReddit.Database.Repositories.UserSubscribe;
@@ -76,5 +77,11 @@ namespace TelegramBotForReddit.Core.Services.UserSubscribe
             var result = _mapper.Map<List<UserSubscribeDto>>(await _userSubscribeRepository.GetBySubredditName(name));
             return result;
         }
+
+        public async Task<List<SubredditDto>> GetPopularestSubreddits()
+            => _mapper.Map<List<SubredditDto>>(await _userSubscribeRepository.GetPopularestSubreddits());
+
+        public async Task<int> GetAverageNumberOfSubscribes()
+            => await _userSubscribeRepository.GetAverageNumberOfSubscribes();
     }
 }

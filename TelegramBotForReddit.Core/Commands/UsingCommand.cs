@@ -26,7 +26,8 @@ namespace TelegramBotForReddit.Core.Commands
                                    "/unsubscribe AskReddit - отписаться от AskReddit\r\n" +
                                    "/subscriptions - получить список подписок\r\n" +
                                    "/subreddits - получить список доступных для подписки сабреддитов\r\n" +
-                                   "/using - получить примеры использования команд";
+                                   "/using - получить примеры использования команд\r\n" +
+                                   "/statistics - получить статистику (доступно только администраторам)";
             return content;
         } 
     }

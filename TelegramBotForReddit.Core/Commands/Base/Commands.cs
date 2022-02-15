@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TelegramBotForReddit.Core.Options;
+using TelegramBotForReddit.Core.Services.Administrator;
 using TelegramBotForReddit.Core.Services.Reddit;
 using TelegramBotForReddit.Core.Services.User;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
@@ -18,6 +19,7 @@ namespace TelegramBotForReddit.Core.Commands.Base
             IUserService userService,
             IMapper mapper,
             IUserSubscribeService userSubscribeService,
+            IAdministratorService administratorService,
             ILogger<StartCommand> startCommandLogger,
             ILogger<SubscribeCommand> subscribeCommandLogger,
             ILogger<UnsubscribeCommand> unsubscribeCommandLogger
@@ -34,7 +36,8 @@ namespace TelegramBotForReddit.Core.Commands.Base
                 new SubredditsCommand(commands[nameof(SubredditsCommand)], redditService),
                 new UnsubscribeCommand(commands[nameof(UnsubscribeCommand)], userService, userSubscribeService, mapper,
                     unsubscribeCommandLogger),
-                new SubscriptionsCommand(commands[nameof(SubscriptionsCommand)], userSubscribeService, userService)
+                new SubscriptionsCommand(commands[nameof(SubscriptionsCommand)], userSubscribeService, userService),
+                new GetStatisticsCommand(commands[nameof(GetStatisticsCommand)], administratorService, userSubscribeService)
             };
         }
 

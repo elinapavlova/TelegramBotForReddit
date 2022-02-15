@@ -67,5 +67,27 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
             
             return result;
         }
+
+        public async Task<List<SubredditModel>> GetPopularestSubreddits()
+        {
+            var subreddits = await _context.UserSubscribes
+                .GroupBy(us => us.SubredditName)
+                .Select(us => new SubredditModel {Name = us.Key, CountSubscribes = us.Count()})
+                .OrderByDescending(us => us.CountSubscribes)
+                .ToListAsync();
+
+            var popular = subreddits.FindAll(us => us.CountSubscribes == subreddits.Max(us => us.CountSubscribes));
+            return popular;
+        }
+
+        public async Task<int> GetAverageNumberOfSubscribes()
+        {
+            var number = await _context.UserSubscribes
+                .GroupBy(us => us.UserId)
+                .Select(us => us.Count())
+                .AverageAsync(us => us);
+
+            return (int) Math.Round(number);
+        }
     }
 }
