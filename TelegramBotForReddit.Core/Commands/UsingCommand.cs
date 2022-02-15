@@ -13,10 +13,11 @@ namespace TelegramBotForReddit.Core.Commands
         }
 
         public sealed override string Name { get; init; }
-        public override Task<Message> Execute(Message message, ITelegramBotClient client)
+        
+        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
         {
             var content = CreateMessage(); 
-            return client.SendTextMessageAsync (message.Chat.Id, content); 
+            return await client.SendTextMessageAsync (message.Chat.Id, content); 
         }
         
         private static string CreateMessage()
