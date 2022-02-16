@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using TelegramBotForReddit.Database.Models;
 
 namespace TelegramBotForReddit.Database.Repositories.User
@@ -18,8 +21,28 @@ namespace TelegramBotForReddit.Database.Repositories.User
             await _context.SaveChangesAsync();
             return user;
         }
+        
+        public async Task<UserModel> Update(UserModel user)
+        {
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
 
-        public async Task<UserModel> GetById(long id)
-            => await _context.Users.FindAsync(id);
+        public async Task<int> GetCountOfStopsBotByDate(DateTime date)
+            => await _context.Users
+                .Where(us => us.DateStopped >= date)
+                .CountAsync();
+        
+        public async Task<UserModel> Get(long id, bool isActual)
+        {
+            return isActual
+                ? await _context.Users.FirstOrDefaultAsync(u =>
+                    u.Id == id
+                    && u.DateStopped == null)
+                : await _context.Users.FirstOrDefaultAsync(u =>
+                    u.Id == id
+                    && u.DateStopped != null);
+        }
     }
 }
