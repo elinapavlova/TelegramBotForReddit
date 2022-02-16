@@ -43,7 +43,7 @@ namespace TelegramBotForReddit.Core.Commands
            
             var subredditName = message.Text.Split(' ')[1];
 
-            var user = await _userService.GetById(message.From.Id);
+            var user = await _userService.Get(message.From.Id, true);
             if (user == null)
                 return await client.SendTextMessageAsync
                     (message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");

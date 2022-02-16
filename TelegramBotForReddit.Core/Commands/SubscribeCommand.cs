@@ -50,7 +50,7 @@ namespace TelegramBotForReddit.Core.Commands
             if (!subs.Exists(sub => sub.Name == subredditName))
                 return await client.SendTextMessageAsync (message.Chat.Id, "Сабреддит с таким названием не найден");
 
-            var user = await _userService.GetById(message.From.Id);
+            var user = await _userService.Get(message.From.Id, true);
             if (user == null)
                 return await client.SendTextMessageAsync
                     (message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");

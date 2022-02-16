@@ -37,7 +37,8 @@ namespace TelegramBotForReddit.Core.Commands.Base
                 new UnsubscribeCommand(commands[nameof(UnsubscribeCommand)], userService, userSubscribeService, mapper,
                     unsubscribeCommandLogger),
                 new SubscriptionsCommand(commands[nameof(SubscriptionsCommand)], userSubscribeService, userService),
-                new GetStatisticsCommand(commands[nameof(GetStatisticsCommand)], administratorService, userSubscribeService)
+                new GetStatisticsCommand(commands[nameof(GetStatisticsCommand)], administratorService, userSubscribeService,
+                    userService)
             };
         }
 
