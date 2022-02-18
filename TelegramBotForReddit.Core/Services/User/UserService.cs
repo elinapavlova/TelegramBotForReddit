@@ -36,9 +36,15 @@ namespace TelegramBotForReddit.Core.Services.User
             return result;
         }
 
+        public async Task<int> Count()
+            => await _userRepository.Count();
+
         public async Task<int> GetCountOfStopsBotByDate(DateTime date)
             => await _userRepository.GetCountOfStopsBotByDate(date);
-        
+
+        public async Task<int> GetCountOfStartsBotByDate(DateTime date)
+            => await _userRepository.GetCountOfStartsBotByDate(date);
+
         public async Task<UserDto> Get(long id, bool isActual)
             => _mapper.Map<UserDto>(await _userRepository.Get(id, isActual));
 

@@ -29,11 +29,21 @@ namespace TelegramBotForReddit.Database.Repositories.User
             return user;
         }
 
+        public async Task<int> Count()
+            => await _context.Users
+                .Where(us => us.DateStopped == null)
+                .CountAsync();
+
         public async Task<int> GetCountOfStopsBotByDate(DateTime date)
             => await _context.Users
                 .Where(us => us.DateStopped >= date)
                 .CountAsync();
-        
+
+        public async Task<int> GetCountOfStartsBotByDate(DateTime date)
+            => await _context.Users
+                .Where(us => us.DateStarted >= date && us.DateStopped == null)
+                .CountAsync();
+
         public async Task<UserModel> Get(long id, bool isActual)
         {
             return isActual

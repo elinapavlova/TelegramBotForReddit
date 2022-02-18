@@ -8,7 +8,9 @@ namespace TelegramBotForReddit.Database.Repositories.User
     {
         Task<UserModel> Create(UserModel user);
         Task<UserModel> Update(UserModel user);
+        Task<int> Count();
         Task<int> GetCountOfStopsBotByDate(DateTime date);
+        Task<int> GetCountOfStartsBotByDate(DateTime date);
         Task<UserModel> Get(long id, bool isActual);
     }
 }

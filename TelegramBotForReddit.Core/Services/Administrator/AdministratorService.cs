@@ -20,10 +20,18 @@ namespace TelegramBotForReddit.Core.Services.Administrator
             _mapper = mapper;
         }
 
-        public async Task<AdministratorDto> GetByUserId(long id)
+        public async Task<AdministratorDto> GetByUserId(long id) 
+            => _mapper.Map<AdministratorDto>(await _administratorRepository.GetByUserId(id));
+        
+        public async Task Delete(long id)
+        { 
+            await _administratorRepository.Delete(id);
+        }
+        
+        public async Task<bool> IsUserAdmin(long id)
         {
-            var admin = _mapper.Map<AdministratorDto>(await _administratorRepository.GetByUserId(id));
-            return admin;
+            var admin = await GetByUserId(id);
+            return admin != null;
         }
     }
 }

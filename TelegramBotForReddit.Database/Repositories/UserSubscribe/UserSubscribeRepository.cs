@@ -71,6 +71,7 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
         public async Task<List<SubredditModel>> GetPopularestSubreddits()
         {
             var subreddits = await _context.UserSubscribes
+                .Where(us => us.DateUnsubscribed == null)
                 .GroupBy(us => us.SubredditName)
                 .Select(us => new SubredditModel {Name = us.Key, CountSubscribes = us.Count()})
                 .OrderByDescending(us => us.CountSubscribes)
@@ -83,6 +84,7 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
         public async Task<int> GetAverageNumberOfSubscribes()
         {
             var number = await _context.UserSubscribes
+                .Where(us => us.DateUnsubscribed == null)
                 .GroupBy(us => us.UserId)
                 .Select(us => us.Count())
                 .AverageAsync(us => us);
