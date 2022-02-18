@@ -14,6 +14,8 @@ using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
 using TelegramBotForReddit.Core.Options;
+using TelegramBotForReddit.Core.Services.Administrator;
+using TelegramBotForReddit.Core.Services.User;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
 using TelegramBotForReddit.Database.Models.RedditMedia;
 
@@ -27,13 +29,17 @@ namespace TelegramBotForReddit.Core.Services.Telegram
         private static TelegramBotClient _bot;
         private static ILogger<TelegramService> _logger;
         private readonly IUserSubscribeService _userSubscribeService;
+        private readonly IUserService _userService;
+        private readonly IAdministratorService _administratorService;
         
         public TelegramService
         (
             IOptions<AppOptions> options,
             ILogger<TelegramService> logger,
             Commands.Base.Commands commands,
-            IUserSubscribeService userSubscribeService
+            IUserSubscribeService userSubscribeService,
+            IUserService userService,
+            IAdministratorService administratorService
         )
         {
             _botToken = options.Value.BotToken;
@@ -41,6 +47,8 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             _logger = logger;
             _userSubscribeService = userSubscribeService;
             _redditBaseAddress = options.Value.RedditBaseAddress;
+            _userService = userService;
+            _administratorService = administratorService;
         }
 
         public TelegramBotClient CreateBot()
@@ -77,8 +85,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                     case UpdateType.MyChatMember :
                         if (update.MyChatMember.NewChatMember.Status != ChatMemberStatus.Kicked) 
                             break;
-                        await _userSubscribeService.UnsubscribeAll(update.MyChatMember.From.Id);
-                        _logger.LogInformation($"user {update.MyChatMember.From.Id} stopped bot");
+                        await StopBot(update.MyChatMember.From.Id);
                         break;
                 }
             }
@@ -116,6 +123,18 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             {
                 _logger.LogError($"Telegram API receiving message Error: {e.Message}");
             }
+        }
+
+        private async Task StopBot(long userId)
+        {
+            var isUserAdmin = await _administratorService.IsUserAdmin(userId);
+            if (isUserAdmin)
+                await _administratorService.Delete(userId);
+            
+            await _userSubscribeService.UnsubscribeAll(userId);
+            await _userService.StopBot(userId);
+            
+            _logger.LogInformation($"user {userId} stopped bot");
         }
 
         public async Task SendMessage(Media media, UserSubscribeDto user, Post post)
