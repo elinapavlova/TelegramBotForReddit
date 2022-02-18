@@ -34,12 +34,13 @@ namespace TelegramBotForReddit.Core.Commands
                 return await client.SendTextMessageAsync (message.Chat.Id, 
                     "Необходимо указать команду в виде /subscriptions");
 
-            var user = await _userService.Get(message.From.Id, true);
-            if (user == null)
+            var userId = message.From.Id;
+            var isActual = await _userService.IsActual(userId);
+            if (isActual is null or false)
                 return await client.SendTextMessageAsync
                     (message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");
 
-            var userSubscribes = await _userSubscribeService.GetByUserId(user.Id);
+            var userSubscribes = await _userSubscribeService.GetByUserId(userId);
             if (userSubscribes.Count == 0)
                 return await client.SendTextMessageAsync(message.Chat.Id, "У вас пока нет подписок");
 

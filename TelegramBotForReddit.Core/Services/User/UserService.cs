@@ -20,19 +20,28 @@ namespace TelegramBotForReddit.Core.Services.User
 
         public async Task<UserDto> Create(UserDto newUser)
         {
-            var user = await _userRepository.Get(newUser.Id, false);
-            if (user != null)
+            var result = new UserDto();
+            var user = await _userRepository.Get(newUser.Id);
+            var isActual = await _userRepository.IsActual(newUser.Id);
+            
+            switch (isActual)
             {
-                user.DateStarted = DateTime.Now;
-                user.DateStopped = null;
-                return _mapper.Map<UserDto>(await _userRepository.Update(user));
+                case false:
+                    user.DateStarted = DateTime.Now;
+                    user.DateStopped = null;
+                    result = _mapper.Map<UserDto>(await _userRepository.Update(user));
+                    break;
+                
+                case null:
+                {
+                    newUser.DateStarted = DateTime.Now;
+                    newUser.DateStopped = null;
+                    user = _mapper.Map<UserModel>(newUser);
+
+                    result = _mapper.Map<UserDto>(await _userRepository.Create(user));
+                    break;
+                }
             }
-            
-            newUser.DateStarted = DateTime.Now;
-            newUser.DateStopped = null;
-            user = _mapper.Map<UserModel>(newUser);
-            
-            var result = _mapper.Map<UserDto>(await _userRepository.Create(user));
             return result;
         }
 
@@ -45,14 +54,17 @@ namespace TelegramBotForReddit.Core.Services.User
         public async Task<int> GetCountOfStartsBotByDate(DateTime date)
             => await _userRepository.GetCountOfStartsBotByDate(date);
 
-        public async Task<UserDto> Get(long id, bool isActual)
-            => _mapper.Map<UserDto>(await _userRepository.Get(id, isActual));
+        public async Task<UserDto> Get(long id)
+            => _mapper.Map<UserDto>(await _userRepository.Get(id));
+
+        public async Task<bool?> IsActual(long id)
+            => await _userRepository.IsActual(id);
 
         public async Task StopBot(long id)
         {
-            // Добавить проверку на администратора и удалить запись, если является администратором
-            var user = await _userRepository.Get(id, true);
-            if (user != null)
+            var user = await _userRepository.Get(id);
+            var isActual = await _userRepository.IsActual(id);
+            if (isActual == true)
             {
                 user.DateStopped = DateTime.Now;
                 await _userRepository.Update(user);

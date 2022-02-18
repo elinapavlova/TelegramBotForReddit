@@ -44,15 +44,17 @@ namespace TelegramBotForReddit.Database.Repositories.User
                 .Where(us => us.DateStarted >= date && us.DateStopped == null)
                 .CountAsync();
 
-        public async Task<UserModel> Get(long id, bool isActual)
+        public async Task<UserModel> Get(long id)
+            => await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+        public async Task<bool?> IsActual(long id)
         {
-            return isActual
-                ? await _context.Users.FirstOrDefaultAsync(u =>
-                    u.Id == id
-                    && u.DateStopped == null)
-                : await _context.Users.FirstOrDefaultAsync(u =>
-                    u.Id == id
-                    && u.DateStopped != null);
+            var user = await Get(id);
+            if (user == null)
+                return null;
+
+            var isActual = await _context.Users.AnyAsync(u => u.Id == id && u.DateStopped == null);
+            return isActual;
         }
     }
 }

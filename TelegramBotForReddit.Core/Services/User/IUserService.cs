@@ -10,7 +10,8 @@ namespace TelegramBotForReddit.Core.Services.User
         Task<int> Count();
         Task<int> GetCountOfStopsBotByDate(DateTime date);
         Task<int> GetCountOfStartsBotByDate(DateTime date);
-        Task<UserDto> Get(long id, bool isActual);
+        Task<UserDto> Get(long id);
+        Task<bool?> IsActual(long id);
         Task StopBot(long id);
     }
 }

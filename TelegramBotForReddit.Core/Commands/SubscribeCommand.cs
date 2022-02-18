@@ -50,17 +50,18 @@ namespace TelegramBotForReddit.Core.Commands
             if (!subs.Exists(sub => sub.Name == subredditName))
                 return await client.SendTextMessageAsync (message.Chat.Id, "Сабреддит с таким названием не найден");
 
-            var user = await _userService.Get(message.From.Id, true);
-            if (user == null)
+            var userId = message.From.Id;
+            var isActual = await _userService.IsActual(userId);
+            if (isActual == null)
                 return await client.SendTextMessageAsync
                     (message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");
 
-            var userSubscribe = await _userSubscribeService.GetActual(user.Id, subredditName);
+            var userSubscribe = await _userSubscribeService.GetActual(userId, subredditName);
             if (userSubscribe != null)
                 return await client.SendTextMessageAsync(message.Chat.Id, $"Вы уже подписаны на {subredditName}");
 
-            _mapper.Map<UserSubscribeDto>(await _userSubscribeService.Subscribe(user.Id, subredditName));
-            _logger.LogInformation($"user {user.Id} subscribed {subredditName}");
+            _mapper.Map<UserSubscribeDto>(await _userSubscribeService.Subscribe(userId, subredditName));
+            _logger.LogInformation($"user {userId} subscribed {subredditName}");
             return await client.SendTextMessageAsync (message.Chat.Id, $"Подписка на {subredditName} подтверждена"); 
         }
     }
