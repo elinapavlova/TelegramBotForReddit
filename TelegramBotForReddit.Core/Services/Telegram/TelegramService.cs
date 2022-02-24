@@ -140,7 +140,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                 await _bot.SendTextMessageAsync(user.UserId, 
                     $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n",
                     replyMarkup: keyboard);
-                _logger.LogError($"Telegram API Error: {ex.ErrorCode}. {ex.Message}");
+                _logger.LogError($"Telegram API upload content Error: {ex.ErrorCode}. {ex.Message} content: {media.Url}");
             }
         }
         
@@ -164,8 +164,8 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             keyboard.Keyboard = rows.ToArray();
             return keyboard;
         }
-        
-        public InlineKeyboardMarkup GetInlineKeyboard(string postUrl, Media media)
+
+        private static InlineKeyboardMarkup GetInlineKeyboard(string postUrl, Media media)
         {
             // Если нет контента или контент - картинка
             return media == null || media.Enabled 
