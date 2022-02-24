@@ -7,8 +7,13 @@ namespace TelegramBotForReddit.Database
     {
         public DbSet<UserModel> Users { get; set; }
         public DbSet<UserSubscribeModel> UserSubscribes { get; set; }
-        
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
+        public DbSet<AdministratorModel> Administrators { get; set; }
+
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)         
+        {
+            Database.EnsureCreatedAsync();
+        }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -18,6 +23,12 @@ namespace TelegramBotForReddit.Database
             {
                 user.Property(u => u.Id).IsRequired();
                 user.Property(u => u.UserName).IsRequired().HasMaxLength(50);
+                user.Property(u => u.DateStarted).IsRequired();
+            });
+            
+            builder.Entity<AdministratorModel>(user =>
+            {
+                user.Property(u => u.UserId).IsRequired();
             });
 
             builder.Entity<UserSubscribeModel>(userSubscribe =>

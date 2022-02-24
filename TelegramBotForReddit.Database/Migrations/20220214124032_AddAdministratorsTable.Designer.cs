@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TelegramBotForReddit.Database;
 
 namespace TelegramBotForReddit.Database.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220214124032_AddAdministratorsTable")]
+    partial class AddAdministratorsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,12 +37,6 @@ namespace TelegramBotForReddit.Database.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("DateStarted")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("DateStopped")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
                         .IsRequired()

@@ -43,17 +43,18 @@ namespace TelegramBotForReddit.Core.Commands
            
             var subredditName = message.Text.Split(' ')[1];
 
-            var user = await _userService.GetById(message.From.Id);
-            if (user == null)
+            var userId = message.From.Id;
+            var isActual = await _userService.IsActual(userId);
+            if (isActual == null)
                 return await client.SendTextMessageAsync
                     (message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");
 
-            var userSubscribe = await _userSubscribeService.GetActual(user.Id, subredditName);
+            var userSubscribe = await _userSubscribeService.GetActual(userId, subredditName);
             if (userSubscribe == null)
                 return await client.SendTextMessageAsync(message.Chat.Id, $"Вы не подписаны на {subredditName}");
 
             _mapper.Map<UserSubscribeDto>(await _userSubscribeService.Unsubscribe(userSubscribe.Id));
-            _logger.LogInformation($"user {message.From.Id} unsubscribed {subredditName}");
+            _logger.LogInformation($"user {userId} unsubscribed {subredditName}");
             return await client.SendTextMessageAsync (message.Chat.Id, $"Подписка на {subredditName} отменена"); 
         }
     }

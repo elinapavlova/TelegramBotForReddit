@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using NLog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
@@ -40,9 +39,12 @@ namespace TelegramBotForReddit.Core.Commands
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
         {
             var u = _mapper.Map<UserDto>(message.From);
-            var user = await _userService.GetById(u.Id) ?? await _userService.Create(u);
+            var isActual = await _userService.IsActual(u.Id); 
+            if(isActual == null)
+                await _userService.Create(u);
+            
             var content = CreateMessage(); 
-            _logger.LogInformation($"user {user.Id} (re)started bot");
+            _logger.LogInformation($"user {u.Id} (re)started bot");
             return await client.SendTextMessageAsync (message.Chat.Id, content); 
         }
         

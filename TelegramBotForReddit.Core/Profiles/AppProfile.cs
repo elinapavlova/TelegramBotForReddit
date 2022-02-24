@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using TelegramBotForReddit.Database.Models;
 using Telegram.Bot.Types;
+using TelegramBotForReddit.Core.Dto.Administrator;
+using TelegramBotForReddit.Core.Dto.Subreddit;
 using TelegramBotForReddit.Core.Dto.User;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
 
@@ -16,6 +18,12 @@ namespace TelegramBotForReddit.Core.Profiles
 
             CreateMap<UserSubscribeDto, UserSubscribeModel>();
             CreateMap<UserSubscribeModel, UserSubscribeDto>();
+
+            CreateMap<AdministratorModel, AdministratorDto>();
+            CreateMap<AdministratorDto, AdministratorModel>();
+
+            CreateMap<SubredditModel, SubredditDto>();
+            CreateMap<SubredditDto, SubredditModel>();
         }
     }
 }
