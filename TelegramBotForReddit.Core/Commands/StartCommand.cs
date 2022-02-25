@@ -39,9 +39,7 @@ namespace TelegramBotForReddit.Core.Commands
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
         {
             var u = _mapper.Map<UserDto>(message.From);
-            var isActual = await _userService.IsActual(u.Id); 
-            if(isActual == null)
-                await _userService.Create(u);
+            await _userService.Create(u);
             
             var content = CreateMessage(); 
             _logger.LogInformation($"user {u.Id} (re)started bot");
