@@ -31,5 +31,12 @@ namespace TelegramBotForReddit.Database.Repositories.Administrator
             _context.Remove(user);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<AdministratorModel> Create(AdministratorModel user)
+        {
+            await _context.Administrators.AddAsync(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
     }
 }

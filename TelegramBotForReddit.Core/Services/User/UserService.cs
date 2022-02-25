@@ -21,7 +21,7 @@ namespace TelegramBotForReddit.Core.Services.User
         public async Task<UserDto> Create(UserDto newUser)
         {
             var result = new UserDto();
-            var user = await _userRepository.Get(newUser.Id);
+            var user = await _userRepository.GetById(newUser.Id);
             var isActual = await _userRepository.IsActual(newUser.Id);
             
             switch (isActual)
@@ -29,6 +29,7 @@ namespace TelegramBotForReddit.Core.Services.User
                 case false:
                     user.DateStarted = DateTime.Now;
                     user.DateStopped = null;
+                    user.UserName = newUser.UserName;
                     result = _mapper.Map<UserDto>(await _userRepository.Update(user));
                     break;
                 
@@ -54,15 +55,18 @@ namespace TelegramBotForReddit.Core.Services.User
         public async Task<int> GetCountOfStartsBotByDate(DateTime date)
             => await _userRepository.GetCountOfStartsBotByDate(date);
 
-        public async Task<UserDto> Get(long id)
-            => _mapper.Map<UserDto>(await _userRepository.Get(id));
+        public async Task<UserDto> GetById(long id)
+            => _mapper.Map<UserDto>(await _userRepository.GetById(id));
+        
+        public async Task<UserDto> GetByName(string name)
+            => _mapper.Map<UserDto>(await _userRepository.GetByName(name));
 
         public async Task<bool?> IsActual(long id)
             => await _userRepository.IsActual(id);
 
         public async Task StopBot(long id)
         {
-            var user = await _userRepository.Get(id);
+            var user = await _userRepository.GetById(id);
             var isActual = await _userRepository.IsActual(id);
             if (isActual == true)
             {

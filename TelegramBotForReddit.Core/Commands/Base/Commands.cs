@@ -22,7 +22,8 @@ namespace TelegramBotForReddit.Core.Commands.Base
             IAdministratorService administratorService,
             ILogger<StartCommand> startCommandLogger,
             ILogger<SubscribeCommand> subscribeCommandLogger,
-            ILogger<UnsubscribeCommand> unsubscribeCommandLogger
+            ILogger<UnsubscribeCommand> unsubscribeCommandLogger,
+            ILogger<MakeAdminCommand> makeAdminLogger
         )
         {
             var commands = commandsOptions.Value.Commands;
@@ -30,15 +31,20 @@ namespace TelegramBotForReddit.Core.Commands.Base
             CommandList = new List<BaseCommand>
             {
                 new StartCommand(commands[nameof(StartCommand)], commandsOptions.Value, userService, mapper, startCommandLogger),
+                
                 new UsingCommand(commands[nameof(UsingCommand)]),
-                new SubscribeCommand(commands[nameof(SubscribeCommand)], redditService, userService, userSubscribeService, 
-                    mapper, subscribeCommandLogger),
+               
+                new SubscribeCommand(commands[nameof(SubscribeCommand)], redditService, userService, userSubscribeService, mapper, subscribeCommandLogger),
+                
                 new SubredditsCommand(commands[nameof(SubredditsCommand)], redditService),
-                new UnsubscribeCommand(commands[nameof(UnsubscribeCommand)], userService, userSubscribeService, mapper,
-                    unsubscribeCommandLogger),
+                
+                new UnsubscribeCommand(commands[nameof(UnsubscribeCommand)], userService, userSubscribeService, mapper, unsubscribeCommandLogger),
+                
                 new SubscriptionsCommand(commands[nameof(SubscriptionsCommand)], userSubscribeService, userService),
-                new GetStatisticsCommand(commands[nameof(GetStatisticsCommand)], administratorService, userSubscribeService,
-                    userService)
+                
+                new GetStatisticsCommand(commands[nameof(GetStatisticsCommand)], administratorService, userSubscribeService, userService),
+                
+                new MakeAdminCommand(commands[nameof(MakeAdminCommand)], administratorService, userService, makeAdminLogger)
             };
         }
 

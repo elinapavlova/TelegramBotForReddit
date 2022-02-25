@@ -30,6 +30,8 @@ namespace TelegramBotForReddit.Database
             {
                 user.Property(u => u.UserId).IsRequired();
             });
+            
+            builder.Entity<AdministratorModel>().HasIndex(a => new {a.UserId}).IsUnique();
 
             builder.Entity<UserSubscribeModel>(userSubscribe =>
             {

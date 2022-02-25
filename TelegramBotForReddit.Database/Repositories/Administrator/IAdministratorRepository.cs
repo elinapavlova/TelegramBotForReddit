@@ -7,5 +7,6 @@ namespace TelegramBotForReddit.Database.Repositories.Administrator
     {
         Task<AdministratorModel> GetByUserId(long id);
         Task Delete(long id);
+        Task<AdministratorModel> Create(AdministratorModel user);
     }
 }
