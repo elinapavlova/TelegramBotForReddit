@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
+using TelegramBotForReddit.Core.Dto.Administrator;
+using TelegramBotForReddit.Core.Dto.User;
 using TelegramBotForReddit.Core.Services.Administrator;
 using TelegramBotForReddit.Core.Services.User;
 
@@ -10,7 +12,7 @@ namespace TelegramBotForReddit.Core.Commands
 {
     public class MakeAdminCommand : BaseCommand
     {
-        public override string Name { get; init; }
+        public sealed override string Name { get; init; }
         private readonly IAdministratorService _administratorService;
         private readonly IUserService _userService;
         private readonly ILogger<MakeAdminCommand> _logger;
@@ -31,46 +33,54 @@ namespace TelegramBotForReddit.Core.Commands
         }
         
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
+            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message)); 
+
+        private async Task<string> CreateMessage(Message message)
         {
             if (message.Text.Split(' ').Length != 2)
-                return await client.SendTextMessageAsync (message.Chat.Id, 
-                    "Необходимо указать команду в виде /make_admin username");
+                return "Необходимо указать команду в виде /make_admin username";
 
-            var isUserAdmin = await _administratorService.IsUserAdmin(message.From.Id);
-            if (!isUserAdmin)
-                return await client.SendTextMessageAsync (message.Chat.Id, 
-                    "Команда доступна только администраторам.");
-            
+            var fromId = message.From.Id;
             var userName = message.Text.Split(' ')[1];
             if (message.From.Username == userName)
-                return await client.SendTextMessageAsync (message.Chat.Id, 
-                    "Необходимо указать имя другого пользователя.");
+                return "Необходимо указать имя другого пользователя.";
+            
+            var isUserAdmin = await IsUserAdmin(fromId);
+            if (!isUserAdmin)
+                return "Команда доступна только администраторам.";
 
-            var text = await CreateMessage(message.From.Id, userName);
-            return await client.SendTextMessageAsync (message.Chat.Id, text);
-        }
-
-        private async Task<string> CreateMessage(long fromId, string name)
-        {
-            var user = await _userService.GetByName(name);
+            var user = await GetUserByName(userName);
             if (user == null)
-                return $"Пользователь {name} не найден.\r\nПримечание:" +
+                return $"Пользователь {userName} не найден.\r\nПримечание:" +
                        "\r\nНе используйте символ @ в начале имени." +
                        "\r\nЕсли пользователь изменил имя, ему необходимо перезапустить бот и повторить попытку.";
 
-            var isActual = await _userService.IsActual(user.Id);
-            if (isActual == null || (bool) !isActual)
-                return $"Пользователь {name} не использует бот.";
+            var isActual = await IsUserActual(user.Id);
+            if (isActual is null or false)
+                return $"Пользователь {userName} не использует бот.";
             
-            var isUserAdmin = await _administratorService.IsUserAdmin(user.Id);
+            isUserAdmin = await IsUserAdmin(user.Id);
             if (isUserAdmin)
-                return $"Пользователь {name} уже является администратором.";
+                return $"Пользователь {userName} уже является администратором.";
 
-            var admin = await _administratorService.Create(user.Id);
-            _logger.LogInformation($"user {fromId} made admin user {name}");
+            var admin = await MakeAdministrator(user.Id);
+            _logger.LogInformation($"user {fromId} made admin user {userName}");
+            
             return admin == null 
-                ? $"Не удалось назначить администратором пользователя {name}." 
-                : $"Пользователь {name} успешно назначен администратором.";
+                ? $"Не удалось назначить администратором пользователя {userName}." 
+                : $"Пользователь {userName} успешно назначен администратором.";
         }
+        
+        private async Task<bool> IsUserAdmin(long userId)
+            => await _administratorService.IsUserAdmin(userId);
+        
+        private async Task<UserDto> GetUserByName(string userName)
+            => await _userService.GetByName(userName);
+        
+        private async Task<bool?> IsUserActual(long userId)
+            => await _userService.IsActual(userId);
+
+        private async Task<AdministratorDto> MakeAdministrator(long userId)
+            => await _administratorService.Create(userId);
     }
 }

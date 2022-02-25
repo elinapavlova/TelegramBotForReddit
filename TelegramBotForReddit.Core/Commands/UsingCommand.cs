@@ -7,22 +7,19 @@ namespace TelegramBotForReddit.Core.Commands
 {
     public class UsingCommand : BaseCommand
     {
+        public sealed override string Name { get; init; }
+        
         public UsingCommand(string commandName) : base(commandName)
         {
             Name = commandName;
         }
 
-        public sealed override string Name { get; init; }
-        
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-        {
-            var content = CreateMessage(); 
-            return await client.SendTextMessageAsync (message.Chat.Id, content); 
-        }
-        
+            => await client.SendTextMessageAsync (message.Chat.Id, CreateMessage());
+
         private static string CreateMessage()
         {
-            const string content = "/start - запустить (перезапустить) бот\r\n" +
+            const string text = "/start - запустить (перезапустить) бот\r\n" +
                                    "/subscribe AskReddit - подписаться на AskReddit\r\n" +
                                    "/unsubscribe AskReddit - отписаться от AskReddit\r\n" +
                                    "/subscriptions - получить список подписок\r\n" +
@@ -30,7 +27,7 @@ namespace TelegramBotForReddit.Core.Commands
                                    "/using - получить примеры использования команд\r\n" +
                                    "/statistics - получить статистику (доступно только администраторам\r\n" +
                                    "/make_admin UserName - назначить пользователя администратором (доступно только администраторам)";
-            return content;
+            return text;
         } 
     }
 }

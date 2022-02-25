@@ -2,7 +2,6 @@
 using System.Net.Http;
 using Microsoft.Extensions.Options;
 using Reddit;
-using Reddit.Controllers;
 using TelegramBotForReddit.Core.Options;
 
 namespace TelegramBotForReddit.Core.Services.Reddit
@@ -25,7 +24,7 @@ namespace TelegramBotForReddit.Core.Services.Reddit
             _appSecret = options.Value.RedditSecret;
             _clientFactory = clientFactory;
         }
-        public List<Subreddit> GetSubreddits(string category)
+        public List<global::Reddit.Controllers.Subreddit> GetSubreddits(string category)
         {
             using var httpclient = _clientFactory.CreateClient("RedditClient");
 

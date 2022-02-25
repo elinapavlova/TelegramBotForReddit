@@ -37,16 +37,22 @@ namespace TelegramBotForReddit.Core.Commands
         }
 
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
+            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message));
+
+        private async Task<string> CreateMessage(Message message)
         {
-            var u = _mapper.Map<UserDto>(message.From);
-            await _userService.Create(u);
-            
-            var content = CreateMessage(); 
-            _logger.LogInformation($"user {u.Id} (re)started bot");
-            return await client.SendTextMessageAsync (message.Chat.Id, content); 
+            await CreateUser(message.From);
+            return CreateCommandsMessage();
         }
-        
-        private static string CreateMessage()
+
+        private async Task CreateUser(User userFrom)
+        {
+            var user = _mapper.Map<UserDto>(userFrom);
+            await _userService.Create(user);
+            _logger.LogInformation($"user {user.Id} (re)started bot");
+        }
+
+        private static string CreateCommandsMessage()
         {
             var content = "Список доступных команд:";
             
@@ -57,6 +63,6 @@ namespace TelegramBotForReddit.Core.Commands
             }
 
             return content;
-        } 
+        }
     }
 }

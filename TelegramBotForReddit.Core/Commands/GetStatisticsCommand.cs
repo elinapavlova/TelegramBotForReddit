@@ -33,25 +33,23 @@ namespace TelegramBotForReddit.Core.Commands
         }
         
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
+            => await client.SendTextMessageAsync(message.Chat.Id, await CreateMessage(message));
+
+        private async Task<string> CreateMessage(Message message)
         {
-            var isUserAdmin = await _administratorService.IsUserAdmin(message.From.Id);
+            var isUserAdmin = await IsUserAdmin(message.From.Id);
             if (!isUserAdmin)
-                return await client.SendTextMessageAsync (message.Chat.Id, 
-                    "Команда доступна только администраторам.");
+                return "Команда доступна только администраторам.";
             
-            var text = await GetStatistics();
-            return await client.SendTextMessageAsync(message.Chat.Id, text);
-        }
+            var text = $"Актуальная статистика на {DateTime.Now}\r\n";
+            text += await GetStatisticsByUsingsBot();
+            text += "\r\n\r\nСамый(ые) популярный(ые) сабреддит(ы) " + await GetPopularestSubreddits();
+            text += "\r\n\r\nСреднее количество подписок -- " + await GetAverageNumberOfSubscribes();
 
-        private async Task<string> GetStatistics()
-        {
-            var message = $"Актуальная статистика на {DateTime.Now}\r\n";
-            message += await GetStatisticsByUsingsBot();
-            message += "\r\n\r\nСамый(ые) популярный(ые) сабреддит(ы) " + await GetPopularestSubreddits();
-            message += "\r\n\r\nСреднее количество подписок -- " + await GetAverageNumberOfSubscribes();
-
-            return message;
+            return text;
         }
+        private async Task<bool> IsUserAdmin(long userId)
+            => await _administratorService.IsUserAdmin(userId);
 
         private async Task<string> GetStatisticsByUsingsBot()
         {
@@ -94,6 +92,7 @@ namespace TelegramBotForReddit.Core.Commands
             return subreddits.Aggregate(message, (current, subreddit) 
                 => current + $"\r\n-- {subreddit.Name} -- {subreddit.CountSubscribes} чел.");
         }
+
         private async Task<int> GetAverageNumberOfSubscribes()
             => await _userSubscribeService.GetAverageNumberOfSubscribes();
     }

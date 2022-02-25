@@ -34,11 +34,11 @@ namespace TelegramBotForReddit.Core.Commands.Base
                 
                 new UsingCommand(commands[nameof(UsingCommand)]),
                
-                new SubscribeCommand(commands[nameof(SubscribeCommand)], redditService, userService, userSubscribeService, mapper, subscribeCommandLogger),
+                new SubscribeCommand(commands[nameof(SubscribeCommand)], redditService, userService, userSubscribeService, subscribeCommandLogger),
                 
                 new SubredditsCommand(commands[nameof(SubredditsCommand)], redditService),
                 
-                new UnsubscribeCommand(commands[nameof(UnsubscribeCommand)], userService, userSubscribeService, mapper, unsubscribeCommandLogger),
+                new UnsubscribeCommand(commands[nameof(UnsubscribeCommand)], userService, userSubscribeService, unsubscribeCommandLogger),
                 
                 new SubscriptionsCommand(commands[nameof(SubscriptionsCommand)], userSubscribeService, userService),
                 

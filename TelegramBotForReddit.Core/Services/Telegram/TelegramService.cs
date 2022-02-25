@@ -104,8 +104,8 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             {
                 // Отделение первого слова (команды)
                 var messageCommand = message.Text.Split(' ').FirstOrDefault();
+                
                 var isExistingCommand = _commands.Any(comm => comm.Contains(messageCommand));
-
                 if (!isExistingCommand)
                 {
                     await botClient.SendTextMessageAsync(message.Chat.Id, "Команда не обнаружена");
@@ -117,7 +117,6 @@ namespace TelegramBotForReddit.Core.Services.Telegram
 
                 var keyboard = GetReplyKeyboard();
                 await botClient.SendTextMessageAsync(message.Chat.Id, "Выбрать команду:", replyMarkup: keyboard);
-
             }
             catch (Exception e)
             {
@@ -143,21 +142,21 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             try
             {
                 if (media != null)
-                    await _bot.SendPhotoAsync(user.UserId,
+                    await _bot.SendPhotoAsync(user.UserId, 
                         $"{media.Images.First().Source.Url}",
-                        $"{post.Subreddit}\r\n{post.Title}\r\n ",
+                        $"{post.Subreddit}\r\n{post.Title}\r\n ", 
                         replyMarkup: keyboard);
                 else
-                    await _bot.SendTextMessageAsync(user.UserId,
-                        $"{post.Subreddit}\r\n{post.Title}\r\n",
+                    await _bot.SendTextMessageAsync(user.UserId, 
+                        $"{post.Subreddit}\r\n{post.Title}\r\n", 
                         replyMarkup: keyboard);
             }
             catch(ApiRequestException ex)
             {
                 await _bot.SendTextMessageAsync(user.UserId, 
-                    $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n",
-                    replyMarkup: keyboard);
-                _logger.LogError($"Telegram API upload content Error: {ex.ErrorCode}. {ex.Message} content: {media.Url}");
+                    $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n", replyMarkup: keyboard);
+                
+                _logger.LogError($"Telegram API upload content Error: {ex.ErrorCode}. {ex.Message} content: {media?.Url}");
             }
         }
         
@@ -198,10 +197,7 @@ namespace TelegramBotForReddit.Core.Services.Telegram
                     new[]
                     {
                         new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)},
-                        new[]
-                        {
-                            InlineKeyboardButton.WithUrl("Перейти к ресурсу", media.Url)
-                        }
+                        new[] {InlineKeyboardButton.WithUrl("Перейти к ресурсу", media.Url)}
                     });
         }
     }

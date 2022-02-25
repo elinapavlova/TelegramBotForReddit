@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
-using AutoMapper;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Reddit.Controllers;
 using Telegram.Bot;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
@@ -16,8 +17,8 @@ namespace TelegramBotForReddit.Core.Commands
         private readonly IRedditService _redditService;
         private readonly IUserService _userService;
         private readonly IUserSubscribeService _userSubscribeService;
-        private readonly IMapper _mapper;
         private readonly ILogger<SubscribeCommand> _logger;
+        public override string Name { get; init; }
         
         public SubscribeCommand
         (
@@ -25,7 +26,6 @@ namespace TelegramBotForReddit.Core.Commands
             IRedditService redditService, 
             IUserService userService, 
             IUserSubscribeService userSubscribeService,
-            IMapper mapper,
             ILogger<SubscribeCommand> logger
         ) 
             : base(commandName)
@@ -33,36 +33,51 @@ namespace TelegramBotForReddit.Core.Commands
             _redditService = redditService;
             _userService = userService;
             _userSubscribeService = userSubscribeService;
-            _mapper = mapper;
             _logger = logger;
         }
-
-        public override string Name { get; init; }
+        
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
+            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message));
+
+        private async Task<string> CreateMessage(Message message)
         {
             if (message.Text.Split(' ').Length != 2)
-                return await client.SendTextMessageAsync (message.Chat.Id, 
-                    "Необходимо указать команду в виде /subscribe RedditName");
+                return "Необходимо указать команду в виде /subscribe RedditName";
            
             var subredditName = message.Text.Split(' ')[1];
-
-            var subs = _redditService.GetSubreddits("popular");
-            if (!subs.Exists(sub => sub.Name == subredditName))
-                return await client.SendTextMessageAsync (message.Chat.Id, "Сабреддит с таким названием не найден");
+            var subreddits = GetSubreddits("popular");
+            if (!IsSubredditExist(subreddits, subredditName))
+                return "Сабреддит с таким названием не найден";
 
             var userId = message.From.Id;
-            var isActual = await _userService.IsActual(userId);
+            
+            var isActual = await IsUserActual(userId);
             if (isActual == null)
-                return await client.SendTextMessageAsync
-                    (message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");
+                return "Необходимо перезапустить бот с помощью команды /start";
 
-            var userSubscribe = await _userSubscribeService.GetActual(userId, subredditName);
+            var userSubscribe = await GetActualUserSubscribe(userId, subredditName);
             if (userSubscribe != null)
-                return await client.SendTextMessageAsync(message.Chat.Id, $"Вы уже подписаны на {subredditName}");
+                return $"Вы уже подписаны на {subredditName}";
 
-            _mapper.Map<UserSubscribeDto>(await _userSubscribeService.Subscribe(userId, subredditName));
+            await Subscribe(userId, subredditName);
             _logger.LogInformation($"user {userId} subscribed {subredditName}");
-            return await client.SendTextMessageAsync (message.Chat.Id, $"Подписка на {subredditName} подтверждена"); 
+            
+            return $"Подписка на {subredditName} подтверждена";
         }
+        
+        private List<Subreddit> GetSubreddits(string category)
+            => _redditService.GetSubreddits(category);
+
+        private static bool IsSubredditExist(List<Subreddit> subreddits, string subredditName)
+            => subreddits.Exists(sub => sub.Name == subredditName);
+        
+        private async Task<bool?> IsUserActual(long userId)
+            => await _userService.IsActual(userId);
+
+        private async Task<UserSubscribeDto> GetActualUserSubscribe(long userId, string subredditName)
+            => await _userSubscribeService.GetActual(userId, subredditName);
+        
+        private async Task Subscribe(long userSubscribeId, string subredditName)
+            => await _userSubscribeService.Subscribe(userSubscribeId, subredditName);
     }
 }

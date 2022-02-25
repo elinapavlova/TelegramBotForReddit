@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using AutoMapper;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -14,48 +14,55 @@ namespace TelegramBotForReddit.Core.Commands
     {
         private readonly IUserService _userService;
         private readonly IUserSubscribeService _userSubscribeService;
-        private readonly IMapper _mapper;
         private readonly ILogger<UnsubscribeCommand> _logger;
+        public override string Name { get; init; }
         
         public UnsubscribeCommand
         (
             string commandName,
             IUserService userService, 
             IUserSubscribeService userSubscribeService,
-            IMapper mapper,
             ILogger<UnsubscribeCommand> logger
         ) 
             : base(commandName)
         {
             _userService = userService;
             _userSubscribeService = userSubscribeService;
-            _mapper = mapper;
             _logger = logger;
         }
 
-        public override string Name { get; init; }
-        
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
+            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message)); 
+
+        private async Task<string> CreateMessage(Message message)
         {
             if (message.Text.Split(' ').Length != 2)
-                return await client.SendTextMessageAsync (message.Chat.Id, 
-                    "Необходимо указать команду в виде /unsubscribe RedditName");
+                return "Необходимо указать команду в виде /unsubscribe RedditName";
            
             var subredditName = message.Text.Split(' ')[1];
-
             var userId = message.From.Id;
-            var isActual = await _userService.IsActual(userId);
+            
+            var isActual = await IsUserActual(userId);
             if (isActual == null)
-                return await client.SendTextMessageAsync
-                    (message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");
+                return "Необходимо перезапустить бот с помощью команды /start";
 
-            var userSubscribe = await _userSubscribeService.GetActual(userId, subredditName);
+            var userSubscribe = await GetActualUserSubscribe(userId, subredditName);
             if (userSubscribe == null)
-                return await client.SendTextMessageAsync(message.Chat.Id, $"Вы не подписаны на {subredditName}");
+                return $"Вы не подписаны на {subredditName}.";
 
-            _mapper.Map<UserSubscribeDto>(await _userSubscribeService.Unsubscribe(userSubscribe.Id));
+            await Unsubscribe(userSubscribe.Id);
             _logger.LogInformation($"user {userId} unsubscribed {subredditName}");
-            return await client.SendTextMessageAsync (message.Chat.Id, $"Подписка на {subredditName} отменена"); 
+            
+            return $"Подписка на {subredditName} отменена."; 
         }
+        
+        private async Task<bool?> IsUserActual(long userId)
+            => await _userService.IsActual(userId);
+
+        private async Task<UserSubscribeDto> GetActualUserSubscribe(long userId, string subredditName)
+            => await _userSubscribeService.GetActual(userId, subredditName);
+        
+        private async Task Unsubscribe(Guid userSubscribeId)
+            => await _userSubscribeService.Unsubscribe(userSubscribeId);
     }
 }
