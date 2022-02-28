@@ -23,7 +23,8 @@ namespace TelegramBotForReddit.Core.Commands.Base
             ILogger<StartCommand> startCommandLogger,
             ILogger<SubscribeCommand> subscribeCommandLogger,
             ILogger<UnsubscribeCommand> unsubscribeCommandLogger,
-            ILogger<MakeAdminCommand> makeAdminLogger
+            ILogger<MakeAdminCommand> makeAdminLogger,
+            ILogger<CancelAdminCommand> cancelAdminLogger
         )
         {
             var commands = commandsOptions.Value.Commands;
@@ -44,7 +45,9 @@ namespace TelegramBotForReddit.Core.Commands.Base
                 
                 new GetStatisticsCommand(commands[nameof(GetStatisticsCommand)], administratorService, userSubscribeService, userService),
                 
-                new MakeAdminCommand(commands[nameof(MakeAdminCommand)], administratorService, userService, makeAdminLogger)
+                new MakeAdminCommand(commands[nameof(MakeAdminCommand)], administratorService, userService, makeAdminLogger),
+                
+                new CancelAdminCommand(commands[nameof(CancelAdminCommand)], cancelAdminLogger, administratorService, userService)
             };
         }
 

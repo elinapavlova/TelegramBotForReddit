@@ -28,10 +28,8 @@ namespace TelegramBotForReddit.Core.Services.Administrator
         public async Task<AdministratorDto> GetByUserId(long id) 
             => _mapper.Map<AdministratorDto>(await _administratorRepository.GetByUserId(id));
         
-        public async Task Delete(long id)
-        { 
-            await _administratorRepository.Delete(id);
-        }
+        public async Task<AdministratorDto> Delete(long id)
+            => _mapper.Map<AdministratorDto>(await _administratorRepository.Delete(id));
 
         public async Task<AdministratorDto> Create(long id)
         {

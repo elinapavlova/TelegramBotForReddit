@@ -7,7 +7,7 @@ namespace TelegramBotForReddit.Core.Services.Administrator
     {
         Task<AdministratorDto> GetByUserId(long id);
         Task<bool> IsUserAdmin(long id);
-        Task Delete(long id);
+        Task<AdministratorDto> Delete(long id);
         Task<AdministratorDto> Create(long id);
     }
 }

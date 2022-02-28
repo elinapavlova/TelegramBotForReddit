@@ -19,14 +19,15 @@ namespace TelegramBotForReddit.Database.Repositories.Administrator
                 .Where(a => a.UserId == id)
                 .FirstOrDefaultAsync();
 
-        public async Task Delete(long id)
+        public async Task<AdministratorModel> Delete(long id)
         {
             var user = await GetByUserId(id);
             if (user == null)
-                return;
+                return null;
             
             _context.Remove(user);
             await _context.SaveChangesAsync();
+            return user;
         }
 
         public async Task<AdministratorModel> Create(AdministratorModel user)
