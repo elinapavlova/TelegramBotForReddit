@@ -120,7 +120,9 @@ namespace TelegramBotForReddit.Core.Services.Telegram
             }
             catch (Exception e)
             {
-                _logger.LogError($"Telegram API receiving message Error: {e.Message}");
+                _logger.LogError($"Telegram API receiving message Error: {e.Message}\r\n" +
+                                 $"user : {message.From.Id} [ {message.From.Username} ]\r\n" +
+                                 $"message : {message.Text}");
             }
         }
 
