@@ -30,25 +30,24 @@ namespace TelegramBotForReddit.Core.Commands
         public sealed override string Name { get; init; }
         
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message));
-
-        private async Task<string> CreateMessage(Message message)
         {
             if (message.Text.Split(' ').Length > 1)
-                return "Необходимо указать команду в виде /subscriptions";
+                return await client.SendTextMessageAsync(message.Chat.Id, "Необходимо указать команду в виде /subscriptions");
 
             var userId = message.From.Id;
             
             var isActual = await IsUserActual(userId);
             if (isActual is null or false)
-                return "Необходимо перезапустить бот с помощью команды /start";
+                return await client.SendTextMessageAsync(message.Chat.Id, "Необходимо перезапустить бот с помощью команды /start");
 
             var userSubscriptions = await GetUserSubscriptions(userId);
-            return userSubscriptions.Count == 0 
+            var text = userSubscriptions.Count == 0 
                 ? "У вас пока нет подписок." 
                 : CreateMessageSubscriptions(userSubscriptions);
+            
+            return await client.SendTextMessageAsync(message.Chat.Id, text);
         }
-        
+
         private async Task<bool?> IsUserActual(long userId)
             => await _userService.IsActual(userId);
         

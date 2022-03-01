@@ -26,14 +26,11 @@ namespace TelegramBotForReddit.Core.Commands
         }
 
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, CreateMessage());
-
-        private string CreateMessage()
-        {
+        { 
             var subreddits = GetSubreddits("popular");
-            return CreateMessageSubreddits(subreddits);
+            return await client.SendTextMessageAsync(message.Chat.Id, CreateMessageSubreddits(subreddits));
         }
-        
+
         private IEnumerable<Subreddit> GetSubreddits(string category)
             => _redditService.GetSubreddits(category);
         

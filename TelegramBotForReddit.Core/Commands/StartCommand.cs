@@ -37,12 +37,9 @@ namespace TelegramBotForReddit.Core.Commands
         }
 
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message));
-
-        private async Task<string> CreateMessage(Message message)
-        {
+        {             
             await CreateUser(message.From);
-            return CreateCommandsMessage();
+            return await client.SendTextMessageAsync(message.Chat.Id, CreateCommandsMessage());
         }
 
         private async Task CreateUser(User userFrom)
