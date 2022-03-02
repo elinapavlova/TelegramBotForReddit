@@ -25,8 +25,8 @@ namespace TelegramBotForReddit.Core.Services.Administrator
             _userService = userService;
         }
 
-        public async Task<AdministratorDto> GetByUserId(long id) 
-            => _mapper.Map<AdministratorDto>(await _administratorRepository.GetByUserId(id));
+        public async Task<AdministratorDto> GetByAdminId(long id) 
+            => _mapper.Map<AdministratorDto>(await _administratorRepository.GetByAdminId(id));
         
         public async Task<AdministratorDto> Delete(long id)
             => _mapper.Map<AdministratorDto>(await _administratorRepository.Delete(id));
@@ -37,7 +37,7 @@ namespace TelegramBotForReddit.Core.Services.Administrator
             if (user == null)
                 return null;
 
-            var userAdmin = await GetByUserId(id);
+            var userAdmin = await GetByAdminId(id);
             if (userAdmin != null)
                 return userAdmin;
 
@@ -52,8 +52,11 @@ namespace TelegramBotForReddit.Core.Services.Administrator
 
         public async Task<bool> IsUserAdmin(long id)
         {
-            var admin = await GetByUserId(id);
+            var admin = await GetByAdminId(id);
             return admin != null;
         }
+        
+        public async Task<bool?> IsUserSuperAdmin(long id)
+            => await _administratorRepository.IsUserSuperAdmin(id);
     }
 }

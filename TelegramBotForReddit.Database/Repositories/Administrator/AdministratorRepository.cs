@@ -14,14 +14,14 @@ namespace TelegramBotForReddit.Database.Repositories.Administrator
             _context = context;
         }
         
-        public async Task<AdministratorModel> GetByUserId(long id)
+        public async Task<AdministratorModel> GetByAdminId(long id)
             => await _context.Administrators
                 .Where(a => a.UserId == id)
                 .FirstOrDefaultAsync();
 
         public async Task<AdministratorModel> Delete(long id)
         {
-            var user = await GetByUserId(id);
+            var user = await GetByAdminId(id);
             if (user == null)
                 return null;
             
@@ -35,6 +35,12 @@ namespace TelegramBotForReddit.Database.Repositories.Administrator
             await _context.Administrators.AddAsync(user);
             await _context.SaveChangesAsync();
             return user;
+        }
+        
+        public async Task<bool?> IsUserSuperAdmin(long id)
+        {
+            var user = await GetByAdminId(id);
+            return user?.IsSuperAdmin;
         }
     }
 }

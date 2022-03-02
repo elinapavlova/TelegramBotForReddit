@@ -5,9 +5,10 @@ namespace TelegramBotForReddit.Core.Services.Administrator
 {
     public interface IAdministratorService
     {
-        Task<AdministratorDto> GetByUserId(long id);
+        Task<AdministratorDto> GetByAdminId(long id);
         Task<bool> IsUserAdmin(long id);
         Task<AdministratorDto> Delete(long id);
         Task<AdministratorDto> Create(long id);
+        Task<bool?> IsUserSuperAdmin(long id);
     }
 }

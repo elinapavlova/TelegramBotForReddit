@@ -45,9 +45,9 @@ namespace TelegramBotForReddit.Core.Commands
             if (message.From.Username == userName)
                 return "Необходимо указать имя другого пользователя.";
             
-            var isUserAdmin = await IsUserAdmin(fromId);
-            if (!isUserAdmin)
-                return "Команда доступна только администраторам.";
+            var isUserSuperAdmin = await IsUserSuperAdmin(fromId);
+            if (isUserSuperAdmin is null or false)
+                return "Команда доступна только суперадминистраторам.";
 
             var user = await GetUserByName(userName);
             if (user == null)
@@ -59,7 +59,7 @@ namespace TelegramBotForReddit.Core.Commands
             if (isActual is null or false)
                 return $"Пользователь {userName} не использует бот.";
             
-            isUserAdmin = await IsUserAdmin(user.Id);
+            var isUserAdmin = await IsUserAdmin(user.Id);
             if (isUserAdmin)
                 return $"Пользователь {userName} уже является администратором.";
 
@@ -70,6 +70,9 @@ namespace TelegramBotForReddit.Core.Commands
                 ? $"Не удалось назначить администратором пользователя {userName}." 
                 : $"Пользователь {userName} успешно назначен администратором.";
         }
+        
+        private async Task<bool?> IsUserSuperAdmin(long userId)
+            => await _administratorService.IsUserSuperAdmin(userId);
         
         private async Task<bool> IsUserAdmin(long userId)
             => await _administratorService.IsUserAdmin(userId);
