@@ -41,6 +41,7 @@ namespace TelegramBotForReddit.Core.Commands
            
             var subredditName = message.Text.Split(' ')[1];
             var userId = message.From.Id;
+            var userName = message.From.Username;
             
             var isActual = await IsUserActual(userId);
             if (isActual == null)
@@ -51,7 +52,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return $"Вы не подписаны на {subredditName}.";
 
             await Unsubscribe(userSubscribe.Id);
-            _logger.LogInformation($"user {userId} unsubscribed {subredditName}");
+            _logger.LogInformation($"user {userId} [{userName}] unsubscribed {subredditName}");
             
             return $"Подписка на {subredditName} отменена."; 
         }

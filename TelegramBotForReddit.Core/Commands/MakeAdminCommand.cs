@@ -41,6 +41,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return "Необходимо указать команду в виде /make_admin username";
 
             var fromId = message.From.Id;
+            var fromName = message.From.Username;
             var userName = message.Text.Split(' ')[1];
             if (message.From.Username == userName)
                 return "Необходимо указать имя другого пользователя.";
@@ -64,7 +65,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return $"Пользователь {userName} уже является администратором.";
 
             var admin = await MakeAdministrator(user.Id);
-            _logger.LogInformation($"user {fromId} made admin user {userName}");
+            _logger.LogInformation($"user {fromId} [{fromName}] made admin user {user.Id} [{userName}]");
             
             return admin == null 
                 ? $"Не удалось назначить администратором пользователя {userName}." 

@@ -50,6 +50,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return "Сабреддит с таким названием не найден";
 
             var userId = message.From.Id;
+            var userName = message.From.Username;
             
             var isActual = await IsUserActual(userId);
             if (isActual == null)
@@ -60,7 +61,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return $"Вы уже подписаны на {subredditName}";
 
             await Subscribe(userId, subredditName);
-            _logger.LogInformation($"user {userId} subscribed {subredditName}");
+            _logger.LogInformation($"user {userId} [{userName}] subscribed {subredditName}");
             
             return $"Подписка на {subredditName} подтверждена";
         }

@@ -46,7 +46,7 @@ namespace TelegramBotForReddit.Core.Commands
         {
             var user = _mapper.Map<UserDto>(userFrom);
             await _userService.Create(user);
-            _logger.LogInformation($"user {user.Id} (re)started bot");
+            _logger.LogInformation($"user {user.Id} [{user.UserName}] (re)started bot");
         }
 
         private static string CreateCommandsMessage()
