@@ -15,19 +15,19 @@ namespace TelegramBotForReddit.Core.Commands
         }
 
         public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, CreateMessage());
+            => await client.SendTextMessageAsync (message.Chat.Id, CreateMessage(message.From.Username));
 
-        private static string CreateMessage()
+        private static string CreateMessage(string userName)
         {
-            const string text = "/start - запустить (перезапустить) бот\r\n" +
-                                "/subscribe AskReddit - подписаться на AskReddit\r\n" +
-                                "/unsubscribe AskReddit - отписаться от AskReddit\r\n" +
-                                "/subscriptions - получить список подписок\r\n" +
-                                "/subreddits - получить список доступных для подписки сабреддитов\r\n" +
-                                "/using - получить примеры использования команд\r\n" +
-                                "/statistics - получить статистику (доступно только администраторам\r\n" +
-                                "/make_admin UserName - назначить пользователя администратором (доступно только администраторам)\r\n" +
-                                "/cancel_admin UserName - отменить назначение пользователя администратором (доступно только администраторам)";
+            var text = "/start - запустить (перезапустить) бот\r\n\r\n" +
+                            "/subscribe AskReddit - подписаться на AskReddit\r\n\r\n" +
+                            "/unsubscribe AskReddit - отписаться от AskReddit\r\n\r\n" +
+                            "/subscriptions - получить список подписок\r\n\r\n" +
+                            "/subreddits - получить список доступных для подписки сабреддитов\r\n\r\n" +
+                            "/using - получить примеры использования команд\r\n\r\n" +
+                            "/statistics - получить статистику (доступно только администраторам\r\n\r\n" +
+                            $"/make_admin {userName} - назначить пользователя администратором (доступно только администраторам)\r\n\r\n" +
+                            $"/cancel_admin {userName} - отменить назначение пользователя администратором (доступно только администраторам)";
             return text;
         } 
     }
