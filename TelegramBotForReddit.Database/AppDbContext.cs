@@ -22,7 +22,7 @@ namespace TelegramBotForReddit.Database
             builder.Entity<UserModel>(user =>
             {
                 user.Property(u => u.Id).IsRequired();
-                user.Property(u => u.UserName).IsRequired().HasMaxLength(50);
+                user.Property(u => u.UserName).HasMaxLength(50);
                 user.Property(u => u.DateStarted).IsRequired();
             });
             
