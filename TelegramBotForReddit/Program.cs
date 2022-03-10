@@ -21,12 +21,14 @@ using TelegramBotForReddit.Core.Options;
 using TelegramBotForReddit.Core.Profiles;
 using TelegramBotForReddit.Core.Services.Administrator;
 using TelegramBotForReddit.Core.Services.Reddit;
+using TelegramBotForReddit.Core.Services.Subreddit;
 using TelegramBotForReddit.Core.Services.Telegram;
 using TelegramBotForReddit.Core.Services.User;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
 using TelegramBotForReddit.Database;
 using TelegramBotForReddit.Database.Models.RedditMedia;
 using TelegramBotForReddit.Database.Repositories.Administrator;
+using TelegramBotForReddit.Database.Repositories.Subreddit;
 using TelegramBotForReddit.Database.Repositories.User;
 using TelegramBotForReddit.Database.Repositories.UserSubscribe;
 using ConfigurationBuilder = TelegramBotForReddit.Core.Configurations.ConfigurationBuilder;
@@ -43,7 +45,8 @@ namespace TelegramBotForReddit
         private static IConfiguration _configuration;
         private static ITelegramService _telegramService;
         private static IRedditService _redditService;
-        
+        private static ISubredditService _subredditService;
+
         public static async Task Main()
         {
             try
@@ -57,6 +60,7 @@ namespace TelegramBotForReddit
                 _telegramService = services.GetService<ITelegramService>();
                 _redditService = services.GetService<IRedditService>();
                 _userSubscribeService = services.GetService<IUserSubscribeService>();
+                _subredditService = services.GetService<ISubredditService>();
 
                 if (_telegramService == null || _redditService == null)
                     throw new Exception("App error: some services not found.");
@@ -73,7 +77,7 @@ namespace TelegramBotForReddit
                 
                 var reddit = new RedditClient(_appOptions.RedditId, _appOptions.RedditRefreshToken, _appOptions.RedditSecret);
                 
-                foreach (var subreddit in _redditService.GetSubreddits("popular")
+                foreach (var subreddit in (await _subredditService.GetAll())
                     .Select(sub => reddit.Subreddit(sub.Name)))
                 {
                     subreddit.Posts.GetNew();  
@@ -145,11 +149,13 @@ namespace TelegramBotForReddit
                 .AddScoped<IUserRepository, UserRepository>()
                 .AddScoped<IUserSubscribeRepository, UserSubscribeRepository>()
                 .AddScoped<IAdministratorRepository, AdministratorRepository>()
+                .AddScoped<ISubredditRepository, SubredditRepository>()
                 .AddScoped<IRedditService, RedditService>()
                 .AddScoped<ITelegramService, TelegramService>()
                 .AddScoped<IUserService, UserService>()
                 .AddScoped<IUserSubscribeService, UserSubscribeService>()
                 .AddScoped<IAdministratorService, AdministratorService>()
+                .AddScoped<ISubredditService, SubredditService>()
                 .AddScoped<Commands>();
 
             return servicesProvider.BuildServiceProvider();

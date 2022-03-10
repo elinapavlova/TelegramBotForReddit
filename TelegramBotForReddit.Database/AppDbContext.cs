@@ -8,6 +8,7 @@ namespace TelegramBotForReddit.Database
         public DbSet<UserModel> Users { get; set; }
         public DbSet<UserSubscribeModel> UserSubscribes { get; set; }
         public DbSet<AdministratorModel> Administrators { get; set; }
+        public DbSet<SubredditModel> Subreddits { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)         
         {
@@ -45,6 +46,13 @@ namespace TelegramBotForReddit.Database
             });
             
             builder.Entity<UserSubscribeModel>().HasIndex(b => new {b.SubredditName, b.UserId}).IsUnique();
+            
+            builder.Entity<SubredditModel>(subreddit =>
+            {
+                subreddit.Property(s => s.Id).IsRequired();
+                subreddit.Property(s => s.Name).IsRequired().HasMaxLength(50);
+            });
+            builder.Entity<SubredditModel>().HasIndex(s => new {s.Name}).IsUnique();
         }
     }
 }
