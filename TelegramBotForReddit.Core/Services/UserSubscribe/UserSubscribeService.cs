@@ -69,8 +69,8 @@ namespace TelegramBotForReddit.Core.Services.UserSubscribe
         public async Task<List<UserSubscribeDto>> GetBySubredditName(string name)
             => _mapper.Map<List<UserSubscribeDto>>(await _userSubscribeRepository.GetBySubredditName(name));
 
-        public async Task<List<SubredditDto>> GetPopularestSubreddits()
-            => _mapper.Map<List<SubredditDto>>(await _userSubscribeRepository.GetPopularestSubreddits());
+        public async Task<List<SubredditStatisticsDto>> GetPopularestSubreddits()
+            => _mapper.Map<List<SubredditStatisticsDto>>(await _userSubscribeRepository.GetPopularestSubreddits());
 
         public async Task<int> GetAverageNumberOfSubscribes()
             => await _userSubscribeRepository.GetAverageNumberOfSubscribes();

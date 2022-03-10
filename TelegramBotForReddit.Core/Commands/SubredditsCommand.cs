@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -35,7 +36,7 @@ namespace TelegramBotForReddit.Core.Commands
             => _redditService.GetSubreddits(category);
         
         private static string CreateMessageSubreddits(IEnumerable<Subreddit> subreddits)
-            => subreddits.Aggregate("Список сабреддитов, доступных для подписки:\r\n", 
+            => subreddits.Aggregate($"Список самых популярных сабреддитов на {DateTime.Now.ToShortDateString()}:\r\n", 
                     (current, sub) => current + sub.Name + "\r\n");
     }
 }

@@ -68,12 +68,12 @@ namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
             return result;
         }
 
-        public async Task<List<SubredditModel>> GetPopularestSubreddits()
+        public async Task<List<SubredditStatisticsModel>> GetPopularestSubreddits()
         {
             var subreddits = await _context.UserSubscribes
                 .Where(us => us.DateUnsubscribed == null)
                 .GroupBy(us => us.SubredditName)
-                .Select(us => new SubredditModel {Name = us.Key, CountSubscribes = us.Count()})
+                .Select(us => new SubredditStatisticsModel {Name = us.Key, CountSubscribes = us.Count()})
                 .OrderByDescending(us => us.CountSubscribes)
                 .ToListAsync();
 

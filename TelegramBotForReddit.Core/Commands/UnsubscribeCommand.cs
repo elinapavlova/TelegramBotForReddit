@@ -5,6 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
+using TelegramBotForReddit.Core.Services.Subreddit;
 using TelegramBotForReddit.Core.Services.User;
 using TelegramBotForReddit.Core.Services.UserSubscribe;
 
@@ -14,6 +15,7 @@ namespace TelegramBotForReddit.Core.Commands
     {
         private readonly IUserService _userService;
         private readonly IUserSubscribeService _userSubscribeService;
+        private readonly ISubredditService _subredditService;
         private readonly ILogger<UnsubscribeCommand> _logger;
         public override string Name { get; init; }
         
@@ -22,12 +24,14 @@ namespace TelegramBotForReddit.Core.Commands
             string commandName,
             IUserService userService, 
             IUserSubscribeService userSubscribeService,
+            ISubredditService subredditService,
             ILogger<UnsubscribeCommand> logger
         ) 
             : base(commandName)
         {
             _userService = userService;
             _userSubscribeService = userSubscribeService;
+            _subredditService = subredditService;
             _logger = logger;
         }
 
@@ -61,7 +65,13 @@ namespace TelegramBotForReddit.Core.Commands
             => await _userService.IsActual(userId);
 
         private async Task<UserSubscribeDto> GetActualUserSubscribe(long userId, string subredditName)
-            => await _userSubscribeService.GetActual(userId, subredditName);
+        {
+            var subreddit = await _subredditService.GetByName(subredditName);
+            if (subreddit == null)
+                return null;
+            
+            return await _userSubscribeService.GetActual(userId, subredditName);
+        }
         
         private async Task Unsubscribe(Guid userSubscribeId)
             => await _userSubscribeService.Unsubscribe(userSubscribeId);

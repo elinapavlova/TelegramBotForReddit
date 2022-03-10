@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Reddit;
 using TelegramBotForReddit.Core.Options;
@@ -24,7 +25,7 @@ namespace TelegramBotForReddit.Core.Services.Reddit
             _appSecret = options.Value.RedditSecret;
             _clientFactory = clientFactory;
         }
-        public List<global::Reddit.Controllers.Subreddit> GetSubreddits(string category)
+        public IEnumerable<global::Reddit.Controllers.Subreddit> GetSubreddits(string category)
         {
             using var httpclient = _clientFactory.CreateClient("RedditClient");
 
@@ -39,5 +40,16 @@ namespace TelegramBotForReddit.Core.Services.Reddit
             => domain == "v.redd.it" 
                 ? $"https://vrddit.com{permalink}" 
                 : url;
+
+        public async Task<bool?> IsSubredditExist(string name)
+        {
+            if (name == null)
+                return null;
+            
+            using var httpclient = _clientFactory.CreateClient("RedditClient");
+
+            var response = await httpclient.GetAsync($"r/{name}.json");
+            return response.IsSuccessStatusCode;
+        }
     }
 }

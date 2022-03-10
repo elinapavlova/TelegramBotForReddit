@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
-using Reddit.Controllers;
+using System.Threading.Tasks;
+
 
 namespace TelegramBotForReddit.Core.Services.Reddit
 {
     public interface IRedditService
     {
-        List<Subreddit> GetSubreddits(string category);
+        IEnumerable<global::Reddit.Controllers.Subreddit> GetSubreddits(string category);
         string MakeUrl(string domain, string url, string permalink);
+        Task<bool?> IsSubredditExist(string name);
     }
 }
