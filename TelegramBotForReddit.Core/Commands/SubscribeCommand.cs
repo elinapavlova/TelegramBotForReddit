@@ -3,10 +3,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
-using TelegramBotForReddit.Core.Services.Reddit;
-using TelegramBotForReddit.Core.Services.Subreddit;
-using TelegramBotForReddit.Core.Services.User;
-using TelegramBotForReddit.Core.Services.UserSubscribe;
+using TelegramBotForReddit.Core.Services.Contracts;
 using Message = Telegram.Bot.Types.Message;
 
 namespace TelegramBotForReddit.Core.Commands

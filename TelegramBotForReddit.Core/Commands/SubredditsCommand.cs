@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using TelegramBotForReddit.Core.Commands.Base;
-using TelegramBotForReddit.Core.Services.Reddit;
 using Message = Telegram.Bot.Types.Message;
 using Reddit.Controllers;
+using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
 {

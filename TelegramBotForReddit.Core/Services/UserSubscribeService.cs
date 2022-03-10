@@ -4,10 +4,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using TelegramBotForReddit.Core.Dto.Subreddit;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
+using TelegramBotForReddit.Core.Services.Contracts;
 using TelegramBotForReddit.Database.Models;
-using TelegramBotForReddit.Database.Repositories.UserSubscribe;
+using TelegramBotForReddit.Database.Repositories.Contracts;
 
-namespace TelegramBotForReddit.Core.Services.UserSubscribe
+namespace TelegramBotForReddit.Core.Services
 {
     public class UserSubscribeService : IUserSubscribeService
     {

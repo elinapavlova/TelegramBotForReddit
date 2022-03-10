@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Reddit;
 using TelegramBotForReddit.Core.Options;
+using TelegramBotForReddit.Core.Services.Contracts;
 
-namespace TelegramBotForReddit.Core.Services.Reddit
+namespace TelegramBotForReddit.Core.Services
 {
     public class RedditService : IRedditService
     {
@@ -25,7 +26,7 @@ namespace TelegramBotForReddit.Core.Services.Reddit
             _appSecret = options.Value.RedditSecret;
             _clientFactory = clientFactory;
         }
-        public IEnumerable<global::Reddit.Controllers.Subreddit> GetSubreddits(string category)
+        public IEnumerable<Reddit.Controllers.Subreddit> GetSubreddits(string category)
         {
             using var httpclient = _clientFactory.CreateClient("RedditClient");
 

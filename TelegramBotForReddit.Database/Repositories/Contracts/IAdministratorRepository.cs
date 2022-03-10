@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TelegramBotForReddit.Database.Models;
 
-namespace TelegramBotForReddit.Database.Repositories.Administrator
+namespace TelegramBotForReddit.Database.Repositories.Contracts
 {
     public interface IAdministratorRepository
     {

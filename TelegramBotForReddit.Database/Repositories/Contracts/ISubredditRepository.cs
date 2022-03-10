@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using TelegramBotForReddit.Database.Models;
 
-namespace TelegramBotForReddit.Database.Repositories.Subreddit
+namespace TelegramBotForReddit.Database.Repositories.Contracts
 {
     public interface ISubredditRepository
     {

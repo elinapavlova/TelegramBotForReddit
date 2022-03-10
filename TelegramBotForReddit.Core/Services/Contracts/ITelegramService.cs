@@ -7,7 +7,7 @@ using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
 using TelegramBotForReddit.Database.Models.RedditMedia;
 
-namespace TelegramBotForReddit.Core.Services.Telegram
+namespace TelegramBotForReddit.Core.Services.Contracts
 {
     public interface ITelegramService
     {

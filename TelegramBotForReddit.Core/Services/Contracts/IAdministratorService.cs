@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using TelegramBotForReddit.Core.Dto.Administrator;
 
-namespace TelegramBotForReddit.Core.Services.Administrator
+namespace TelegramBotForReddit.Core.Services.Contracts
 {
     public interface IAdministratorService
     {

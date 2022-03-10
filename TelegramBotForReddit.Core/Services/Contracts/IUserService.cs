@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using TelegramBotForReddit.Core.Dto.User;
 
-namespace TelegramBotForReddit.Core.Services.User
+namespace TelegramBotForReddit.Core.Services.Contracts
 {
     public interface IUserService
     {

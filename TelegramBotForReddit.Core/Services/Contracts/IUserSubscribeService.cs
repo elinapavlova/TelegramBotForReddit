@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using TelegramBotForReddit.Core.Dto.Subreddit;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
 
-namespace TelegramBotForReddit.Core.Services.UserSubscribe
+namespace TelegramBotForReddit.Core.Services.Contracts
 {
     public interface IUserSubscribeService
     {

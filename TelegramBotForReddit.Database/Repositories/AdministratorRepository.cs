@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TelegramBotForReddit.Database.Models;
+using TelegramBotForReddit.Database.Repositories.Contracts;
 
-namespace TelegramBotForReddit.Database.Repositories.Administrator
+namespace TelegramBotForReddit.Database.Repositories
 {
     public class AdministratorRepository : IAdministratorRepository
     {

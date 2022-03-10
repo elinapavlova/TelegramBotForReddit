@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using TelegramBotForReddit.Core.Dto.User;
+using TelegramBotForReddit.Core.Services.Contracts;
 using TelegramBotForReddit.Database.Models;
-using TelegramBotForReddit.Database.Repositories.User;
+using TelegramBotForReddit.Database.Repositories.Contracts;
 
-namespace TelegramBotForReddit.Core.Services.User
+namespace TelegramBotForReddit.Core.Services
 {
     public class UserService : IUserService
     {

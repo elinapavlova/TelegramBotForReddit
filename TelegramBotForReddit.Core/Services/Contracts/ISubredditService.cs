@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using TelegramBotForReddit.Core.Dto.Subreddit;
 
-namespace TelegramBotForReddit.Core.Services.Subreddit
+namespace TelegramBotForReddit.Core.Services.Contracts
 {
     public interface ISubredditService
     {

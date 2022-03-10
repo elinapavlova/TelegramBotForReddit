@@ -5,8 +5,7 @@ using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.Administrator;
 using TelegramBotForReddit.Core.Dto.User;
-using TelegramBotForReddit.Core.Services.Administrator;
-using TelegramBotForReddit.Core.Services.User;
+using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
 {

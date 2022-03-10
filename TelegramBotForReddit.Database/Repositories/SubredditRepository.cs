@@ -3,8 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TelegramBotForReddit.Database.Models;
+using TelegramBotForReddit.Database.Repositories.Contracts;
 
-namespace TelegramBotForReddit.Database.Repositories.Subreddit
+namespace TelegramBotForReddit.Database.Repositories
 {
     public class SubredditRepository : ISubredditRepository
     {

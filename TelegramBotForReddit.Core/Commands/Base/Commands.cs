@@ -3,11 +3,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TelegramBotForReddit.Core.Options;
-using TelegramBotForReddit.Core.Services.Administrator;
-using TelegramBotForReddit.Core.Services.Reddit;
-using TelegramBotForReddit.Core.Services.Subreddit;
-using TelegramBotForReddit.Core.Services.User;
-using TelegramBotForReddit.Core.Services.UserSubscribe;
+using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands.Base
 {

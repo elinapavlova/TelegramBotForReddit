@@ -14,12 +14,10 @@ using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
 using TelegramBotForReddit.Core.Options;
-using TelegramBotForReddit.Core.Services.Administrator;
-using TelegramBotForReddit.Core.Services.User;
-using TelegramBotForReddit.Core.Services.UserSubscribe;
+using TelegramBotForReddit.Core.Services.Contracts;
 using TelegramBotForReddit.Database.Models.RedditMedia;
 
-namespace TelegramBotForReddit.Core.Services.Telegram
+namespace TelegramBotForReddit.Core.Services
 {
     public class TelegramService : ITelegramService
     {

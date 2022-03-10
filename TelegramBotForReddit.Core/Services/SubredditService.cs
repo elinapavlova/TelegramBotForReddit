@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using AutoMapper;
 using TelegramBotForReddit.Core.Dto.Subreddit;
-using TelegramBotForReddit.Database.Repositories.Subreddit;
+using TelegramBotForReddit.Core.Services.Contracts;
 using TelegramBotForReddit.Database.Models;
+using TelegramBotForReddit.Database.Repositories.Contracts;
 
-namespace TelegramBotForReddit.Core.Services.Subreddit
+namespace TelegramBotForReddit.Core.Services
 {
     public class SubredditService : ISubredditService
     {

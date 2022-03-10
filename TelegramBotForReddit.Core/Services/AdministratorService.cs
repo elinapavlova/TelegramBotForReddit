@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using AutoMapper;
 using TelegramBotForReddit.Core.Dto.Administrator;
-using TelegramBotForReddit.Core.Services.User;
+using TelegramBotForReddit.Core.Services.Contracts;
 using TelegramBotForReddit.Database.Models;
-using TelegramBotForReddit.Database.Repositories.Administrator;
+using TelegramBotForReddit.Database.Repositories.Contracts;
 
-namespace TelegramBotForReddit.Core.Services.Administrator
+namespace TelegramBotForReddit.Core.Services
 {
     public class AdministratorService : IAdministratorService
     {

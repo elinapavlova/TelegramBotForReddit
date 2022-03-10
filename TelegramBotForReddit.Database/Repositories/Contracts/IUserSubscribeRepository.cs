@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TelegramBotForReddit.Database.Models;
 
-namespace TelegramBotForReddit.Database.Repositories.UserSubscribe
+namespace TelegramBotForReddit.Database.Repositories.Contracts
 {
     public interface IUserSubscribeRepository
     {
