@@ -14,45 +14,44 @@ namespace TelegramBotForReddit.Database
         {
             Database.EnsureCreatedAsync();
         }
-
-
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<UserModel>(user =>
+            builder.Entity<UserModel>(_ =>
             {
-                user.Property(u => u.Id).IsRequired();
-                user.Property(u => u.UserName).HasMaxLength(50);
-                user.Property(u => u.DateStarted).IsRequired();
+                _.Property(user => user.Id).IsRequired();
+                _.Property(user => user.UserName).HasMaxLength(50);
+                _.Property(user => user.DateStarted).IsRequired();
             });
             
-            builder.Entity<AdministratorModel>(user =>
+            builder.Entity<AdministratorModel>(_ =>
             {
-                user.Property(u => u.UserId).IsRequired();
-                user.Property(u => u.IsSuperAdmin).IsRequired().HasDefaultValue(false);
+                _.Property(admin => admin.UserId).IsRequired();
+                _.Property(admin => admin.IsSuperAdmin).IsRequired().HasDefaultValue(false);
             });
             
-            builder.Entity<AdministratorModel>().HasIndex(a => new {a.UserId}).IsUnique();
+            builder.Entity<AdministratorModel>().HasIndex(admin => new {admin.UserId}).IsUnique();
 
-            builder.Entity<UserSubscribeModel>(userSubscribe =>
+            builder.Entity<UserSubscribeModel>(_ =>
             {
-                userSubscribe.Property(us => us.SubredditName).IsRequired().HasMaxLength(100);
-                userSubscribe.Property(us => us.DateSubscribed).IsRequired();
+                _.Property(userSubscribe => userSubscribe.SubredditName).IsRequired().HasMaxLength(100);
+                _.Property(userSubscribe => userSubscribe.DateSubscribed).IsRequired();
                 
-                userSubscribe.HasOne(us => us.User)
+                _.HasOne(us => us.User)
                     .WithMany(u => u.Subscribes)
                     .HasForeignKey(us => us.UserId);
             });
             
-            builder.Entity<UserSubscribeModel>().HasIndex(b => new {b.SubredditName, b.UserId}).IsUnique();
+            builder.Entity<UserSubscribeModel>().HasIndex(userSubscribe => new {userSubscribe.SubredditName, userSubscribe.UserId}).IsUnique();
             
-            builder.Entity<SubredditModel>(subreddit =>
+            builder.Entity<SubredditModel>(_ =>
             {
-                subreddit.Property(s => s.Id).IsRequired();
-                subreddit.Property(s => s.Name).IsRequired().HasMaxLength(50);
+                _.Property(subreddit => subreddit.Id).IsRequired();
+                _.Property(subreddit => subreddit.Name).IsRequired().HasMaxLength(50);
             });
-            builder.Entity<SubredditModel>().HasIndex(s => new {s.Name}).IsUnique();
+            builder.Entity<SubredditModel>().HasIndex(subreddit => new {subreddit.Name}).IsUnique();
         }
     }
 }

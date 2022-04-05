@@ -6,7 +6,7 @@ namespace TelegramBotForReddit.Core.Services.Contracts
 {
     public interface IUserService
     {
-        Task<UserDto> Create(UserDto newUser);
+        Task<UserDto> CreateOrUpdate(UserDto newUser);
         Task<int> Count();
         Task<int> GetCountOfStopsBotByDate(DateTime date);
         Task<int> GetCountOfStartsBotByDate(DateTime date);

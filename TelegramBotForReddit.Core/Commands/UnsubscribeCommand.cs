@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
+using TelegramBotForReddit.Core.HttpClients;
 using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
@@ -14,7 +13,7 @@ namespace TelegramBotForReddit.Core.Commands
         private readonly IUserService _userService;
         private readonly IUserSubscribeService _userSubscribeService;
         private readonly ISubredditService _subredditService;
-        private readonly ILogger<UnsubscribeCommand> _logger;
+        private readonly TelegramHttpClient _telegramHttpClient;
         public override string Name { get; init; }
         
         public UnsubscribeCommand
@@ -23,18 +22,18 @@ namespace TelegramBotForReddit.Core.Commands
             IUserService userService, 
             IUserSubscribeService userSubscribeService,
             ISubredditService subredditService,
-            ILogger<UnsubscribeCommand> logger
+            TelegramHttpClient telegramHttpClient
         ) 
             : base(commandName)
         {
             _userService = userService;
             _userSubscribeService = userSubscribeService;
             _subredditService = subredditService;
-            _logger = logger;
+            _telegramHttpClient = telegramHttpClient;
         }
 
-        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message)); 
+        public override async Task Execute(Message message)
+            => await _telegramHttpClient.SendTextMessage(message.Chat.Id, await CreateMessage(message)); 
 
         private async Task<string> CreateMessage(Message message)
         {
@@ -54,7 +53,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return $"Вы не подписаны на {subredditName}.";
 
             await Unsubscribe(userSubscribe.Id);
-            _logger.LogInformation($"user {userId} [{userName}] unsubscribed {subredditName}");
+            Logger.Logger.LogInfo($"user {userId} [{userName}] unsubscribed {subredditName}");
             
             return $"Подписка на {subredditName} отменена."; 
         }

@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.Administrator;
 using TelegramBotForReddit.Core.Dto.User;
+using TelegramBotForReddit.Core.HttpClients;
 using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
@@ -14,25 +13,25 @@ namespace TelegramBotForReddit.Core.Commands
         public sealed override string Name { get; init; }
         private readonly IAdministratorService _administratorService;
         private readonly IUserService _userService;
-        private readonly ILogger<MakeAdminCommand> _logger;
+        private readonly TelegramHttpClient _telegramHttpClient;
 
         public MakeAdminCommand
         (
             string commandName,
             IAdministratorService administratorService,
             IUserService userService,
-            ILogger<MakeAdminCommand> logger
+            TelegramHttpClient telegramHttpClient
         ) 
             : base(commandName)
         {
             Name = commandName;
             _administratorService = administratorService;
             _userService = userService;
-            _logger = logger;
+            _telegramHttpClient = telegramHttpClient;
         }
         
-        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message)); 
+        public override async Task Execute(Message message)
+            => await _telegramHttpClient.SendTextMessage(message.Chat.Id, await CreateMessage(message)); 
 
         private async Task<string> CreateMessage(Message message)
         {
@@ -42,7 +41,7 @@ namespace TelegramBotForReddit.Core.Commands
             var fromId = message.From.Id;
             var fromName = message.From.Username;
             var userName = message.Text.Split(' ')[1];
-            if (message.From.Username == userName)
+            if (fromName == userName)
                 return "Необходимо указать имя другого пользователя.";
             
             var isUserSuperAdmin = await IsUserSuperAdmin(fromId);
@@ -64,7 +63,7 @@ namespace TelegramBotForReddit.Core.Commands
                 return $"Пользователь {userName} уже является администратором.";
 
             var admin = await MakeAdministrator(user.Id);
-            _logger.LogInformation($"user {fromId} [{fromName}] made admin user {user.Id} [{userName}]");
+            Logger.Logger.LogInfo($"user {fromId} [{fromName}] made admin user {user.Id} [{userName}]");
             
             return admin == null 
                 ? $"Не удалось назначить администратором пользователя {userName}." 

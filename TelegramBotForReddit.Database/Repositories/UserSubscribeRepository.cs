@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -78,11 +79,11 @@ namespace TelegramBotForReddit.Database.Repositories
                 .OrderByDescending(us => us.CountSubscribes)
                 .ToListAsync();
 
-            var popular = subreddits.FindAll(us => us.CountSubscribes == subreddits.Max(us => us.CountSubscribes));
+            var popular = subreddits.FindAll(us => us.CountSubscribes == subreddits.Max(_ => _.CountSubscribes));
             return popular;
         }
 
-        public async Task<int> GetAverageNumberOfSubscribes()
+        public async Task<int?> GetAverageNumberOfSubscribes()
         {
             var number = await _context.UserSubscribes
                 .Where(us => us.DateUnsubscribed == null)
@@ -90,7 +91,9 @@ namespace TelegramBotForReddit.Database.Repositories
                 .Select(us => us.Count())
                 .AverageAsync(us => us);
 
-            return (int) Math.Round(number);
+            var numberRound = Math.Round(number).ToString(CultureInfo.InvariantCulture);
+            int.TryParse(numberRound, out var result);
+            return result;
         }
     }
 }

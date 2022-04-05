@@ -14,6 +14,6 @@ namespace TelegramBotForReddit.Database.Repositories.Contracts
         Task<UserSubscribeModel> GetById(Guid id);
         Task<List<UserSubscribeModel>> GetBySubredditName(string name);
         Task<List<SubredditStatisticsModel>> GetPopularestSubreddits();
-        Task<int> GetAverageNumberOfSubscribes();
+        Task<int?> GetAverageNumberOfSubscribes();
     }
 }

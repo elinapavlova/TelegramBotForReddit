@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Reddit.Controllers;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
+using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
+using TelegramBotForReddit.Core.HttpClients;
 using TelegramBotForReddit.Core.Options;
 using TelegramBotForReddit.Core.Services.Contracts;
 using TelegramBotForReddit.Database.Models.RedditMedia;
@@ -22,62 +23,41 @@ namespace TelegramBotForReddit.Core.Services
     public class TelegramService : ITelegramService
     {
         private static List<BaseCommand> _commands;
-        private readonly string _botToken;
         private readonly string _redditBaseAddress;
-        private static TelegramBotClient _bot;
-        private static ILogger<TelegramService> _logger;
         private readonly IUserSubscribeService _userSubscribeService;
         private readonly IUserService _userService;
         private readonly IAdministratorService _administratorService;
+        private readonly TelegramHttpClient _telegramHttpClient;
         
         public TelegramService
         (
-            IOptions<AppOptions> options,
-            ILogger<TelegramService> logger,
-            Commands.Base.Commands commands,
+            IOptions<RedditOptions> options,
+            CommandList commands,
             IUserSubscribeService userSubscribeService,
             IUserService userService,
-            IAdministratorService administratorService
+            IAdministratorService administratorService,
+            TelegramHttpClient telegramHttpClient
         )
         {
-            _botToken = options.Value.BotToken;
-            _commands = commands.CommandList;
-            _logger = logger;
+            _commands = commands.Commands;
             _userSubscribeService = userSubscribeService;
-            _redditBaseAddress = options.Value.RedditBaseAddress;
+            _redditBaseAddress = options.Value.BaseAddress;
             _userService = userService;
             _administratorService = administratorService;
-        }
-
-        public TelegramBotClient CreateBot()
-        {
-            _bot = new TelegramBotClient(_botToken);
-            return _bot;
+            _telegramHttpClient = telegramHttpClient;
         }
         
-        public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
-        {
-            var errorMessage = exception switch
-            {
-                ApiRequestException apiRequestException => "Telegram API Error:\n" +
-                                                           $"[{apiRequestException.ErrorCode}]\n" +
-                                                           $"{apiRequestException.Message}",
-                _                                       => exception.ToString()
-            };
+        public DefaultUpdateHandler CreateDefaultUpdateHandler()
+            => new (HandleUpdateAsync, HandleErrorAsync);
 
-            Console.WriteLine(errorMessage);
-            _logger.LogError($"Telegram API handling updates Error: {errorMessage}");
-            return Task.CompletedTask;
-        }
-        
-        public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             try
             {
                 switch (update.Type)
                 {
                     case UpdateType.Message :
-                        await BotOnMessageReceived(botClient, update.Message);
+                        await BotOnMessageReceived(update.Message);
                         break;
                     
                     case UpdateType.MyChatMember :
@@ -93,35 +73,58 @@ namespace TelegramBotForReddit.Core.Services
             }
         }
         
-        private static async Task BotOnMessageReceived(ITelegramBotClient botClient, Message message)
+        private static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        {
+            var errorMessage = exception switch
+            {
+                ApiRequestException apiRequestException => "Telegram API Error:\n" +
+                                                           $"[{apiRequestException.ErrorCode}]\n" +
+                                                           $"{apiRequestException.Message}",
+                _                                       => exception.ToString()
+            };
+
+            Console.WriteLine(errorMessage);
+            Logger.Logger.LogError($"Telegram API handling updates Error: {errorMessage}");
+            return Task.CompletedTask;
+        }
+        
+        private async Task BotOnMessageReceived(Message message)
         {
             // Если сообщение не текст - игнорировать
             if (message.Type != MessageType.Text)
                 return;
             try
             {
-                // Отделение первого слова (команды)
-                var messageCommand = message.Text.Split(' ').FirstOrDefault();
-                
-                var isExistingCommand = _commands.Any(comm => comm.Contains(messageCommand));
-                if (!isExistingCommand)
+                var command = GetCommandByName(message);
+                if (command is null)
                 {
-                    await botClient.SendTextMessageAsync(message.Chat.Id, "Команда не обнаружена");
+                    await _telegramHttpClient.SendTextMessage(message.Chat.Id, "Команда не обнаружена");
                     return;
                 }
-
-                var command = _commands.First(c => c.Name == messageCommand);
-                await command.Execute(message, botClient as TelegramBotClient);
-
-                var keyboard = GetReplyKeyboard();
-                await botClient.SendTextMessageAsync(message.Chat.Id, "Выбрать команду:", replyMarkup: keyboard);
+                
+                await command.Execute(message);
+                await SendReplyKeyboard(message);
             }
             catch (Exception e)
             {
-                _logger.LogError($"Telegram API receiving message Error: {e.Message}\r\n" +
+                Logger.Logger.LogError($"Telegram API receiving message Error: {e.Message}\r\n" +
                                  $"user : {message.From.Id} [ {message.From.Username} ]\r\n" +
                                  $"message : {message.Text}");
             }
+        }
+
+        private static BaseCommand GetCommandByName(Message message)
+        {
+            // Отделение первого слова (команды)
+            var commandName = message.Text.Split(' ').FirstOrDefault();
+            var command = _commands.FirstOrDefault(command => command.Contains(commandName));
+            return command;
+        }
+
+        private async Task SendReplyKeyboard(Message message)
+        {
+            var keyboard = GetReplyKeyboard();
+            await _telegramHttpClient.SendTextMessage(message.Chat.Id, "Выбрать команду:", keyboard);
         }
 
         private async Task StopBot(long userId)
@@ -133,33 +136,32 @@ namespace TelegramBotForReddit.Core.Services
             await _userSubscribeService.UnsubscribeAll(userId);
             await _userService.StopBot(userId);
             
-            _logger.LogInformation($"user {userId} stopped bot");
+            Logger.Logger.LogInfo($"user {userId} stopped bot");
         }
 
         public async Task SendMessage(Media media, UserSubscribeDto user, Post post)
         {
-            var keyboard = GetInlineKeyboard($"{_redditBaseAddress}{post.Permalink}", media);
+            var keyboard = GetInlineKeyboard(CreatePostUrl(post), media);
             try
             {
                 if (media != null)
-                    await _bot.SendPhotoAsync(user.UserId, 
-                        $"{media.Images.First().Source.Url}",
-                        $"{post.Subreddit}\r\n{post.Title}\r\n ", 
-                        replyMarkup: keyboard);
+                    await _telegramHttpClient.SendPhotoMessage(user.UserId, $"{media.Images.First().Source.Url}", post, keyboard);
                 else
-                    await _bot.SendTextMessageAsync(user.UserId, 
-                        $"{post.Subreddit}\r\n{post.Title}\r\n", 
-                        replyMarkup: keyboard);
+                    await _telegramHttpClient.SendTextMessage(user.UserId, $"{post.Subreddit}\r\n{post.Title}\r\n", keyboard);
             }
             catch(ApiRequestException ex)
             {
-                await _bot.SendTextMessageAsync(user.UserId, 
-                    $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n", replyMarkup: keyboard);
+                await _telegramHttpClient.SendTextMessage(user.UserId, CreateUnsuccessfulContentMessage(post), keyboard);
                 
-                _logger.LogError($"Telegram API upload content Error: {ex.ErrorCode}. {ex.Message} content: {media?.Url}");
+                Logger.Logger.LogError($"Telegram API upload content Error: {ex.ErrorCode}. {ex.Message} content: {media?.Url}");
             }
         }
-        
+
+        private static string CreateUnsuccessfulContentMessage(Post post)
+        {
+            return $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n";
+        }
+
         private static ReplyKeyboardMarkup GetReplyKeyboard()
         {
             var keyboard = new ReplyKeyboardMarkup();
@@ -167,6 +169,7 @@ namespace TelegramBotForReddit.Core.Services
             var columns = new List<KeyboardButton>();
             var lastIndex = _commands.Count - 1;
 
+            // Алгоритм для размещения команд в виде кнопок reply-клавиатуры
             foreach (var command in _commands)
             {
                 var index = _commands.IndexOf(command);
@@ -199,6 +202,11 @@ namespace TelegramBotForReddit.Core.Services
                         new[] {InlineKeyboardButton.WithUrl("Перейти к посту", postUrl)},
                         new[] {InlineKeyboardButton.WithUrl("Перейти к ресурсу", media.Url)}
                     });
+        }
+        
+        private string CreatePostUrl(Post post)
+        {
+            return $"{_redditBaseAddress}{post.Permalink}";
         }
     }
 }

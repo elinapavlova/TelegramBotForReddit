@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
+using TelegramBotForReddit.Core.HttpClients;
 using TelegramBotForReddit.Core.Services.Contracts;
 using Message = Telegram.Bot.Types.Message;
 
@@ -14,7 +13,7 @@ namespace TelegramBotForReddit.Core.Commands
         private readonly IUserService _userService;
         private readonly IUserSubscribeService _userSubscribeService;
         private readonly ISubredditService _subredditService;
-        private readonly ILogger<SubscribeCommand> _logger;
+        private readonly TelegramHttpClient _telegramHttpClient;
         public override string Name { get; init; }
         
         public SubscribeCommand
@@ -24,7 +23,7 @@ namespace TelegramBotForReddit.Core.Commands
             IUserService userService, 
             IUserSubscribeService userSubscribeService,
             ISubredditService subredditService,
-            ILogger<SubscribeCommand> logger
+            TelegramHttpClient telegramHttpClient
         ) 
             : base(commandName)
         {
@@ -32,11 +31,11 @@ namespace TelegramBotForReddit.Core.Commands
             _userService = userService;
             _userSubscribeService = userSubscribeService;
             _subredditService = subredditService;
-            _logger = logger;
+            _telegramHttpClient = telegramHttpClient;
         }
         
-        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, await CreateMessage(message));
+        public override async Task Execute(Message message)
+            => await _telegramHttpClient.SendTextMessage(message.Chat.Id, await CreateMessage(message));
 
         private async Task<string> CreateMessage(Message message)
         {
@@ -55,15 +54,13 @@ namespace TelegramBotForReddit.Core.Commands
             var isActual = await IsUserActual(userId);
             if (isActual == null)
                 return "Необходимо перезапустить бот с помощью команды /start";
-            
-            
 
             var userSubscribe = await GetActualUserSubscribe(userId, subredditName);
             if (userSubscribe != null)
                 return $"Вы уже подписаны на {subredditName}.";
 
             await Subscribe(userId, subredditName);
-            _logger.LogInformation($"user {userId} [{userName}] subscribed {subredditName}");
+            Logger.Logger.LogInfo($"user {userId} [{userName}] subscribed {subredditName}");
             
             return $"Подписка на {subredditName} подтверждена.";
         }

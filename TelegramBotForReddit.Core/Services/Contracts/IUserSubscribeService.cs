@@ -15,6 +15,6 @@ namespace TelegramBotForReddit.Core.Services.Contracts
         Task<List<UserSubscribeDto>> GetByUserId(long userId);
         Task<List<UserSubscribeDto>> GetBySubredditName(string name);
         Task<List<SubredditStatisticsDto>> GetPopularestSubreddits();
-        Task<int> GetAverageNumberOfSubscribes();
+        Task<int?> GetAverageNumberOfSubscribes();
     }
 }

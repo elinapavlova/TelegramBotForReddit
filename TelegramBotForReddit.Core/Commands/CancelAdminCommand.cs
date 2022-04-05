@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
 using TelegramBotForReddit.Core.Dto.Administrator;
 using TelegramBotForReddit.Core.Dto.User;
+using TelegramBotForReddit.Core.HttpClients;
 using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
@@ -12,26 +11,26 @@ namespace TelegramBotForReddit.Core.Commands
     public class CancelAdminCommand : BaseCommand
     {
         public sealed override string Name { get; init; }
-        private readonly ILogger<CancelAdminCommand> _logger;
         private readonly IAdministratorService _administratorService;
         private readonly IUserService _userService;
+        private readonly TelegramHttpClient _telegramHttpClient;
         
         public CancelAdminCommand
         (
-            string commandName, 
-            ILogger<CancelAdminCommand> logger, 
+            string commandName,
             IAdministratorService administratorService,
-            IUserService userService
+            IUserService userService,
+            TelegramHttpClient telegramHttpClient
         ) : base(commandName)
         {
             Name = commandName;
-            _logger = logger;
             _administratorService = administratorService;
             _userService = userService;
+            _telegramHttpClient = telegramHttpClient;
         }
         
-        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync(message.Chat.Id, await CreateMessage(message));
+        public override async Task Execute(Message message)
+            => await _telegramHttpClient.SendTextMessage(message.Chat.Id, await CreateMessage(message));
 
         private async Task<string> CreateMessage(Message message)
         { 
@@ -41,7 +40,8 @@ namespace TelegramBotForReddit.Core.Commands
             var fromId = message.From.Id;
             var fromName = message.From.Username;
             var userName = message.Text.Split(' ')[1];
-            if (message.From.Username == userName)
+            
+            if (fromName == userName)
                 return "Необходимо указать имя другого пользователя.";
             
             var isUserAdmin = await IsUserAdmin(fromId);
@@ -50,7 +50,7 @@ namespace TelegramBotForReddit.Core.Commands
 
             var user = await GetUserByName(userName);
             if (user == null)
-                return $"Пользователь {userName} не найден.\r\nПримечание:" +
+                return $"Пользователь {userName} не найден.\r\nПримечание:" + 
                        "\r\nНе используйте символ @ в начале имени." +
                        "\r\nЕсли пользователь изменил имя, ему необходимо перезапустить бот и повторить попытку.";
 
@@ -63,11 +63,12 @@ namespace TelegramBotForReddit.Core.Commands
                 return $"Пользователь {userName} не является администратором.";
 
             var admin = await CancelAdministrator(user.Id);
-            _logger.LogInformation($"user {fromId} [{fromName}] cancel admin user {user.Id} [{userName}]");
+            if (admin is null) 
+                return $"Не удалось отменить назначение администратором пользователя {userName}.";
             
-            return admin == null 
-                ? $"Не удалось отменить назначение администратором пользователя {userName}." 
-                : $"Назначение администратором пользователя {userName} отменено.";
+            Logger.Logger.LogInfo($"user {fromId} [{fromName}] cancel admin user {user.Id} [{userName}]");
+            return $"Назначение администратором пользователя {userName} отменено.";
+
         }
         
         private async Task<bool> IsUserAdmin(long userId)

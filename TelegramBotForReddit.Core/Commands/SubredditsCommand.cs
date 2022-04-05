@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using TelegramBotForReddit.Core.Commands.Base;
 using Message = Telegram.Bot.Types.Message;
 using Reddit.Controllers;
+using TelegramBotForReddit.Core.HttpClients;
 using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
@@ -13,23 +13,27 @@ namespace TelegramBotForReddit.Core.Commands
     public class SubredditsCommand : BaseCommand
     {
         private readonly IRedditService _redditService;
+        private readonly TelegramHttpClient _telegramHttpClient;
         public sealed override string Name { get; init; }
+        
         
         public SubredditsCommand
         (
             string commandName, 
-            IRedditService redditService
+            IRedditService redditService,
+            TelegramHttpClient telegramHttpClient
         ) 
             : base(commandName)
         {
             Name = commandName;
             _redditService = redditService;
+            _telegramHttpClient = telegramHttpClient;
         }
 
-        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
+        public override async Task Execute(Message message)
         { 
             var subreddits = GetSubreddits("popular");
-            return await client.SendTextMessageAsync(message.Chat.Id, CreateMessageSubreddits(subreddits));
+            await _telegramHttpClient.SendTextMessage(message.Chat.Id, CreateMessageSubreddits(subreddits));
         }
 
         private IEnumerable<Subreddit> GetSubreddits(string category)

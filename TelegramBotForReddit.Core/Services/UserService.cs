@@ -19,7 +19,7 @@ namespace TelegramBotForReddit.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<UserDto> Create(UserDto newUser)
+        public async Task<UserDto> CreateOrUpdate(UserDto newUser)
         {
             var result = new UserDto();
             var user = await _userRepository.GetById(newUser.Id);

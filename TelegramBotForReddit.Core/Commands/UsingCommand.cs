@@ -1,21 +1,28 @@
 ﻿using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using TelegramBotForReddit.Core.Commands.Base;
+using TelegramBotForReddit.Core.HttpClients;
 
 namespace TelegramBotForReddit.Core.Commands
 {
     public class UsingCommand : BaseCommand
     {
+        private readonly TelegramHttpClient _telegramHttpClient;
         public sealed override string Name { get; init; }
         
-        public UsingCommand(string commandName) : base(commandName)
+        public UsingCommand
+        (
+            string commandName, 
+            TelegramHttpClient telegramHttpClient
+        ) 
+            : base(commandName)
         {
             Name = commandName;
+            _telegramHttpClient = telegramHttpClient;
         }
 
-        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-            => await client.SendTextMessageAsync (message.Chat.Id, CreateMessage(message.From.Username));
+        public override async Task Execute(Message message)
+            => await _telegramHttpClient.SendTextMessage(message.Chat.Id, CreateMessage(message.From.Username));
 
         private static string CreateMessage(string userName)
         {

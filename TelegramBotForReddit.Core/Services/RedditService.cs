@@ -1,42 +1,23 @@
 ﻿using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
-using Reddit;
-using TelegramBotForReddit.Core.Options;
+using TelegramBotForReddit.Core.HttpClients;
 using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Services
 {
     public class RedditService : IRedditService
     {
-        private readonly string _appRefreshToken;
-        private readonly string _appId;
-        private readonly string _appSecret;
-        private readonly IHttpClientFactory _clientFactory;
+        private readonly RedditHttpClient _redditHttpClient;
         
-        public RedditService
-        (
-            IOptions<AppOptions> options, 
-            IHttpClientFactory clientFactory
-        )
+        public RedditService(RedditHttpClient redditHttpClient)
         {
-            _appRefreshToken = options.Value.RedditRefreshToken;
-            _appId = options.Value.RedditId;
-            _appSecret = options.Value.RedditSecret;
-            _clientFactory = clientFactory;
+            _redditHttpClient = redditHttpClient;
         }
+        
         public IEnumerable<Reddit.Controllers.Subreddit> GetSubreddits(string category)
-        {
-            using var httpclient = _clientFactory.CreateClient("RedditClient");
+            => _redditHttpClient.GetSubredditsByCategory(category);
 
-            var reddit = new RedditClient(_appId, _appRefreshToken, _appSecret);
-            
-            var subreddits = reddit.GetSubreddits(category);
-            return subreddits;
-        }
-        
-        // Если видео загружено на Reddit - перенаправлять на сервис для показа видео, иначе вернуть ссылку
+        // Если видео загружено на Reddit - перенаправлять на сервис для показа видео, иначе вернуть новую ссылку
         public string MakeUrl(string domain, string url, string permalink)
             => domain == "v.redd.it" 
                 ? $"https://vrddit.com{permalink}" 
@@ -46,11 +27,8 @@ namespace TelegramBotForReddit.Core.Services
         {
             if (name == null)
                 return null;
-            
-            using var httpclient = _clientFactory.CreateClient("RedditClient");
 
-            var response = await httpclient.GetAsync($"r/{name}.json");
-            return response.IsSuccessStatusCode;
+            return await _redditHttpClient.IsSubredditExist(name);
         }
     }
 }

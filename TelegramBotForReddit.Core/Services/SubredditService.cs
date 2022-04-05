@@ -23,9 +23,6 @@ namespace TelegramBotForReddit.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<List<SubredditDto>> GetAll()
-            => _mapper.Map<List<SubredditDto>>(await _subredditRepository.GetAll());
-
         public async Task<SubredditDto> GetByName(string name)
             => _mapper.Map<SubredditDto>(await _subredditRepository.GetByName(name));
 
