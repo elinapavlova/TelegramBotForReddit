@@ -5,6 +5,8 @@
 *.sln.docstates
 
 redditbotdb
+redditbotdb-shm
+redditbotdb-wal
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

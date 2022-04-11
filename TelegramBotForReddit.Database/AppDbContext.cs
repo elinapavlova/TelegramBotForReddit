@@ -12,7 +12,6 @@ namespace TelegramBotForReddit.Database
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)         
         {
-            Database.EnsureCreatedAsync();
         }
         
         protected override void OnModelCreating(ModelBuilder builder)

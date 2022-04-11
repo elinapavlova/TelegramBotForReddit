@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
@@ -26,15 +28,19 @@ namespace TelegramBotForReddit
         private static IConfiguration _configuration;
         private static IRedditBotService _redditBotService;
 
-        public static void Main()
+        public static async Task Main()
         {
             try
             {
                 _configuration = ConfigurationBuilder.Build();
 
-                var services = ConfigureServices();
-                
-                _redditBotService = services.GetService<IRedditBotService>();
+                var services = new ServiceCollection();
+                ConfigureServices(services);
+                await using var provider = services.BuildServiceProvider();
+
+                await MigrationUp(provider);
+
+                _redditBotService = provider.GetService<IRedditBotService>();
                 if (_redditBotService is null)
                     throw new Exception("App error: RedditBotService not found.");
 
@@ -50,11 +56,20 @@ namespace TelegramBotForReddit
             }
         }
 
-        private static ServiceProvider ConfigureServices()
+        private static async Task MigrationUp(IServiceProvider provider)
         {
-            var servicesProvider = new ServiceCollection();
+            using var scope = provider.CreateScope();
+            var context = scope.ServiceProvider.GetService<AppDbContext>();
+            await context.Database.MigrateAsync();
+        }
+        
+        public static IHostBuilder CreateHostBuilder(string[] args)
+            => Host.CreateDefaultBuilder(args)
+                .ConfigureServices(ConfigureServices);
 
-            servicesProvider.AddLogging(logger =>
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            services.AddLogging(logger =>
                 {
                     ConfigureExtensions.AddNLog(logger, "nlog.config");
                     logger.AddFilter("Microsoft", LogLevel.Warning);
@@ -65,12 +80,10 @@ namespace TelegramBotForReddit
                 .Configure<RedditOptions>(_configuration.GetSection(RedditOptions.Reddit))
                 .AddSingleton<CommandList>();
             
-            AddDbContext(servicesProvider);
-            AddHttpClients(servicesProvider);
-            AddRepositoryInjections(servicesProvider);
-            AddServiceInjections(servicesProvider);
-
-            return servicesProvider.BuildServiceProvider();
+            AddDbContext(services);
+            AddHttpClients(services);
+            AddRepositoryInjections(services);
+            AddServiceInjections(services);
         }
         
         private static IMapper ConfigureMapper()
