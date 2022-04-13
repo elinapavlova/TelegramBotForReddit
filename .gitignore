@@ -4,6 +4,8 @@
 *.userosscache
 *.sln.docstates
 
+appsettings.json
+
 redditbotdb
 redditbotdb-shm
 redditbotdb-wal
