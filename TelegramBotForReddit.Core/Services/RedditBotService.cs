@@ -51,6 +51,7 @@ namespace TelegramBotForReddit.Core.Services
                 using var cts = new CancellationTokenSource();
                 InitializeBot(cts);
                 Console.WriteLine($"{DateTime.Now} : Bot started.");
+                Logger.Logger.LogInfo($"Bot started {DateTime.Now}");
 
                 CheckNewPosts();
 

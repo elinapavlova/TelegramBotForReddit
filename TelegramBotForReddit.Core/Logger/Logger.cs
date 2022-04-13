@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using NLog.Web;
 
 namespace TelegramBotForReddit.Core.Logger
@@ -10,6 +11,7 @@ namespace TelegramBotForReddit.Core.Logger
         public static void LogError(string message)
         {
             _logger.Error(message);
+            Console.WriteLine(message);
         }
         
         public static void LogInfo(string message)

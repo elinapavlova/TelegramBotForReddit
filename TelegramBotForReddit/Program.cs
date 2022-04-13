@@ -44,7 +44,7 @@ namespace TelegramBotForReddit
                 if (_redditBotService is null)
                     throw new Exception("App error: RedditBotService not found.");
 
-                _redditBotService.Work();
+                await _redditBotService.Work();
             }
             catch (Exception e)
             {
