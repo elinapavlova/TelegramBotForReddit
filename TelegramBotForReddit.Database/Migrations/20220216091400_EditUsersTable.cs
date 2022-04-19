@@ -11,8 +11,7 @@ namespace TelegramBotForReddit.Database.Migrations
                 name: "DateStarted",
                 table: "Users",
                 type: "TEXT",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                nullable: false);
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "DateStopped",

@@ -6,5 +6,6 @@ namespace TelegramBotForReddit.Database.Models
     {
         public Guid Id { get; set; }
         public long UserId { get; set; }
+        public bool IsSuperAdmin { get; set; }
     }
 }

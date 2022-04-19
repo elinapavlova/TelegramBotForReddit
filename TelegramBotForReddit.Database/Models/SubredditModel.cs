@@ -1,8 +1,10 @@
-﻿namespace TelegramBotForReddit.Database.Models
+﻿using System;
+
+namespace TelegramBotForReddit.Database.Models
 {
     public class SubredditModel
     {
+        public Guid Id { get; set; }
         public string Name { get; set; }
-        public int CountSubscribes { get; set; }
     }
 }

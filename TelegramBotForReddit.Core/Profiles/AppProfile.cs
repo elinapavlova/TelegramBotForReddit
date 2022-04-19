@@ -22,6 +22,9 @@ namespace TelegramBotForReddit.Core.Profiles
             CreateMap<AdministratorModel, AdministratorDto>();
             CreateMap<AdministratorDto, AdministratorModel>();
 
+            CreateMap<SubredditStatisticsModel, SubredditStatisticsDto>();
+            CreateMap<SubredditStatisticsDto, SubredditStatisticsModel>();
+
             CreateMap<SubredditModel, SubredditDto>();
             CreateMap<SubredditDto, SubredditModel>();
         }

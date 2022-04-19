@@ -6,8 +6,9 @@ namespace TelegramBotForReddit.Core.Configurations
     public static class ConfigurationBuilder
     {
         private static readonly IConfigurationRoot Builder = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", false)
+            .SetBasePath(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location))
+            .AddJsonFile("appsettings.default.json", false)
+            .AddJsonFile("appsettings.json", true)
             .Build();
 
         public static IConfigurationRoot Build() 

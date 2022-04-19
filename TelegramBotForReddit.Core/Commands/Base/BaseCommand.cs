@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace TelegramBotForReddit.Core.Commands.Base
@@ -12,7 +11,7 @@ namespace TelegramBotForReddit.Core.Commands.Base
         }
 
         public abstract string Name { get; init; }
-        public abstract Task<Message> Execute(Message message, ITelegramBotClient botClient);
+        public abstract Task Execute(Message message);
         public bool Contains(string message)
             => Name.Equals(message);
     }

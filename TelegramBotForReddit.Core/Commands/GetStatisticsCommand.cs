@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using TelegramBotForReddit.Core.Commands.Base;
-using TelegramBotForReddit.Core.Services.Administrator;
-using TelegramBotForReddit.Core.Services.User;
-using TelegramBotForReddit.Core.Services.UserSubscribe;
+using TelegramBotForReddit.Core.HttpClients;
+using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
 {
@@ -16,13 +15,15 @@ namespace TelegramBotForReddit.Core.Commands
         private readonly IAdministratorService _administratorService;
         private readonly IUserSubscribeService _userSubscribeService;
         private readonly IUserService _userService;
+        private readonly TelegramHttpClient _telegramHttpClient;
         
         public GetStatisticsCommand
         (
             string commandName, 
             IAdministratorService administratorService,
             IUserSubscribeService userSubscribeService,
-            IUserService userService
+            IUserService userService,
+            TelegramHttpClient telegramHttpClient
         ) 
             : base(commandName)
         {
@@ -30,28 +31,31 @@ namespace TelegramBotForReddit.Core.Commands
             _administratorService = administratorService;
             _userSubscribeService = userSubscribeService;
             _userService = userService;
+            _telegramHttpClient = telegramHttpClient;
+        }
+
+        public override async Task Execute(Message message)
+        {
+            var isUserAdmin = await IsUserAdmin(message.From.Id);
+            if (!isUserAdmin)
+                await _telegramHttpClient.SendTextMessage(message.Chat.Id,"Команда доступна только администраторам\\.");
+            
+            var text = $"Актуальная статистика на <b><u>{DateTime.Now}</u></b>\r\n";
+            
+            text += await GetStatisticsByUsingsBot();
+            
+            text += "\r\n\r\n<b>Среднее количество подписок</b> -- " + await GetAverageNumberOfSubscribes();
+            
+            var popularestSubreddits = await GetPopularestSubreddits();
+            text += popularestSubreddits.Length > 1 
+                ? "\r\n\r\n<b>Самые популярные сабреддиты</b> " + popularestSubreddits
+                : "\r\n\r\n<b>Самый популярный сабреддит</b> " + popularestSubreddits;
+            
+            await _telegramHttpClient.SendTextMessage(message.Chat.Id, text, ParseMode.Html);
         }
         
-        public override async Task<Message> Execute(Message message, ITelegramBotClient client)
-        {
-            var isUserAdmin = await _administratorService.IsUserAdmin(message.From.Id);
-            if (!isUserAdmin)
-                return await client.SendTextMessageAsync (message.Chat.Id, 
-                    "Команда доступна только администраторам.");
-            
-            var text = await GetStatistics();
-            return await client.SendTextMessageAsync(message.Chat.Id, text);
-        }
-
-        private async Task<string> GetStatistics()
-        {
-            var message = $"Актуальная статистика на {DateTime.Now}\r\n";
-            message += await GetStatisticsByUsingsBot();
-            message += "\r\n\r\nСамый(ые) популярный(ые) сабреддит(ы) " + await GetPopularestSubreddits();
-            message += "\r\n\r\nСреднее количество подписок -- " + await GetAverageNumberOfSubscribes();
-
-            return message;
-        }
+        private async Task<bool> IsUserAdmin(long userId)
+            => await _administratorService.IsUserAdmin(userId);
 
         private async Task<string> GetStatisticsByUsingsBot()
         {
@@ -60,15 +64,15 @@ namespace TelegramBotForReddit.Core.Commands
             var dateMonthAgo = DateTime.Today.AddMonths(-1);
             var message = string.Empty;
 
-            message += $"\r\nИспользуют -- {await GetCountOfUsers()} чел.";
+            message += $"\r\n<b>Используют</b> -- {await GetCountOfUsers()} чел.";
             
-            message += "\r\n\r\nОстановили бот" +
+            message += "\r\n\r\n<b>Остановили бот</b>" +
                        $"\r\n-- за неделю (с {dateWeekAgo.ToShortDateString()} до {today}) -- " +
                        await GetCountOfStopsBotByDate(dateWeekAgo) + " чел." +
                        $"\r\n-- за месяц (с {dateMonthAgo.ToShortDateString()} до {today}) -- " + 
                        await GetCountOfStopsBotByDate(dateMonthAgo) + " чел.";
             
-            message += "\r\n\r\n(Пере)запустили бот" +
+            message += "\r\n\r\n<b>(Пере)запустили бот</b>" +
                        $"\r\n-- за неделю (с {dateWeekAgo.ToShortDateString()} до {today}) -- " +
                        await GetCountOfStartsBotByDate(dateWeekAgo) + " чел." +
                        $"\r\n-- за месяц (с {dateMonthAgo.ToShortDateString()} до {today}) -- " + 
@@ -94,7 +98,8 @@ namespace TelegramBotForReddit.Core.Commands
             return subreddits.Aggregate(message, (current, subreddit) 
                 => current + $"\r\n-- {subreddit.Name} -- {subreddit.CountSubscribes} чел.");
         }
-        private async Task<int> GetAverageNumberOfSubscribes()
+
+        private async Task<int?> GetAverageNumberOfSubscribes()
             => await _userSubscribeService.GetAverageNumberOfSubscribes();
     }
 }

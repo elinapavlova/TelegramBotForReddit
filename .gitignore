@@ -7,6 +7,8 @@
 appsettings.json
 
 redditbotdb
+redditbotdb-shm
+redditbotdb-wal
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
