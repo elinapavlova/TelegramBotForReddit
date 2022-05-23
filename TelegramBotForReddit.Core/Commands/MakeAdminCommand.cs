@@ -64,6 +64,8 @@ namespace TelegramBotForReddit.Core.Commands
 
             var admin = await MakeAdministrator(user.Id);
             Logger.Logger.LogInfo($"user {fromId} [{fromName}] made admin user {user.Id} [{userName}]");
+
+            await InformUser(user.Id, fromName);
             
             return admin == null 
                 ? $"Не удалось назначить администратором пользователя {userName}." 
@@ -84,5 +86,8 @@ namespace TelegramBotForReddit.Core.Commands
 
         private async Task<AdministratorDto> MakeAdministrator(long userId)
             => await _administratorService.Create(userId);
+        
+        private async Task InformUser(long userId, string username)
+            => await _telegramHttpClient.SendTextMessage(userId, $"Пользователь {username} назначил Вас администратором");
     }
 }

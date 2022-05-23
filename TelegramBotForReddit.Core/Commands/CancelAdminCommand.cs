@@ -44,8 +44,8 @@ namespace TelegramBotForReddit.Core.Commands
             if (fromName == userName)
                 return "Необходимо указать имя другого пользователя.";
             
-            var isUserAdmin = await IsUserAdmin(fromId);
-            if (!isUserAdmin)
+            var isUserSuperAdmin = await IsUserSuperAdmin(fromId);
+            if (isUserSuperAdmin is null or false)
                 return "Команда доступна только администраторам.";
 
             var user = await GetUserByName(userName);
@@ -58,11 +58,11 @@ namespace TelegramBotForReddit.Core.Commands
             if (isActual is null or false)
                 return $"Пользователь {userName} не использует бот.";
             
-            isUserAdmin = await IsUserAdmin(user.Id);
+            var isUserAdmin = await IsUserAdmin(user.Id);
             if (!isUserAdmin)
                 return $"Пользователь {userName} не является администратором.";
             
-            var isUserSuperAdmin = await IsUserSuperAdmin(user.Id);
+            isUserSuperAdmin = await IsUserSuperAdmin(user.Id);
             if (isUserSuperAdmin is true)
                 return $"Пользователь {userName} является суперадминистратором.";
 
@@ -71,8 +71,8 @@ namespace TelegramBotForReddit.Core.Commands
                 return $"Не удалось отменить назначение администратором пользователя {userName}.";
             
             Logger.Logger.LogInfo($"user {fromId} [{fromName}] cancel admin user {user.Id} [{userName}]");
+            await InformUser(user.Id, fromName);
             return $"Назначение администратором пользователя {userName} отменено.";
-
         }
         
         private async Task<bool> IsUserAdmin(long userId)
@@ -89,5 +89,9 @@ namespace TelegramBotForReddit.Core.Commands
         
         private async Task<bool?> IsUserSuperAdmin(long userId)
             => await _administratorService.IsUserSuperAdmin(userId);
+        
+        private async Task InformUser(long userId, string username)
+            => await _telegramHttpClient.SendTextMessage(userId, 
+                $"Пользователь {username} отменил назначение Вас администратором");
     }
 }
