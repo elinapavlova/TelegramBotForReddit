@@ -39,7 +39,7 @@ namespace TelegramBotForReddit.Core.Commands
             var isUserAdmin = await IsUserAdmin(message.From.Id);
             if (!isUserAdmin)
             {
-                await _telegramHttpClient.SendTextMessage(message.Chat.Id, "Команда доступна только администраторам\\.");
+                await _telegramHttpClient.SendTextMessage(message.Chat.Id, "Команда доступна только администраторам.");
                 return;
             }
             
