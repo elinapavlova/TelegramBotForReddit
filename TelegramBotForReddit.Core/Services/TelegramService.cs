@@ -123,13 +123,13 @@ namespace TelegramBotForReddit.Core.Services
 
         private async Task SendReplyKeyboard(Message message)
         {
-            var keyboard = GetReplyKeyboard();
+            var keyboard = await GetReplyKeyboard(message.From.Id);
             await _telegramHttpClient.SendTextMessage(message.Chat.Id, "Выбрать команду:", keyboard);
         }
 
         private async Task StopBot(long userId)
         {
-            var isUserAdmin = await _administratorService.IsUserAdmin(userId);
+            var isUserAdmin = await IsUserAdmin(userId);
             if (isUserAdmin)
                 await _administratorService.Delete(userId);
             
@@ -162,20 +162,26 @@ namespace TelegramBotForReddit.Core.Services
             return $"[Не удалось загрузить контент]\r\n{post.Subreddit}\r\n{post.Title}\r\n";
         }
 
-        private static ReplyKeyboardMarkup GetReplyKeyboard()
+        private async Task<bool> IsUserAdmin(long userId)
+        {
+            return await _administratorService.IsUserAdmin(userId);
+        }
+        
+        private async Task<ReplyKeyboardMarkup> GetReplyKeyboard(long userId)
         {
             var keyboard = new ReplyKeyboardMarkup();
             var rows = new List<KeyboardButton[]>();
             var columns = new List<KeyboardButton>();
-            var lastIndex = _commands.Count - 1;
 
-            // Алгоритм для размещения команд в виде кнопок reply-клавиатуры
-            foreach (var command in _commands)
+            var commandNames = await GetCommandNamesForReplyKeyboard(userId);
+            var commandNamesPositions = GetCommandNamesPositions(commandNames);
+            var lastIndex = commandNamesPositions.Count - 1;
+            
+            foreach (var (name, position) in commandNamesPositions)
             {
-                var index = _commands.IndexOf(command);
-                columns.Add(command.Name);
+                columns.Add(name);
                 
-                if (index % 2 == 0 && index != lastIndex) 
+                if (position % 2 == 0 && position != lastIndex) 
                     continue;
                 
                 rows.Add(columns.ToArray());
@@ -184,6 +190,35 @@ namespace TelegramBotForReddit.Core.Services
 
             keyboard.Keyboard = rows.ToArray();
             return keyboard;
+        }
+
+        private async Task<List<string>> GetCommandNamesForReplyKeyboard(long userId)
+        {
+            // В reply-клавиатуре находятся команды, не требующие ввода параметра после названия
+            var commandNames = new List<string>
+            {
+                "/start", "/subreddits", "/subscriptions", "/using"
+            };
+            
+            var isUserAdmin = await IsUserAdmin(userId);
+            if (isUserAdmin)
+                commandNames.Add("/statistics");
+            
+            return commandNames;
+        }
+        
+        private static Dictionary<string, int> GetCommandNamesPositions(ICollection<string> commandNames)
+        {
+            var commandNamesPositions = new Dictionary<string, int>();
+            var index = 0;
+            
+            foreach (var command in _commands.Where(c => commandNames.Contains(c.Name) is not false))
+            {
+                commandNamesPositions.Add(command.Name, index);
+                index++;
+            }
+
+            return commandNamesPositions;
         }
 
         private static InlineKeyboardMarkup GetInlineKeyboard(string postUrl, Media media)

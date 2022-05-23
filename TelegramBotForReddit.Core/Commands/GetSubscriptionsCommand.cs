@@ -9,13 +9,13 @@ using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
 {
-    public class SubscriptionsCommand : BaseCommand
+    public class GetSubscriptionsCommand : BaseCommand
     {
         private readonly IUserSubscribeService _userSubscribeService;
         private readonly IUserService _userService;
         private readonly TelegramHttpClient _telegramHttpClient;
         
-        public SubscriptionsCommand
+        public GetSubscriptionsCommand
         (
             string commandName, 
             IUserSubscribeService userSubscribeService, 

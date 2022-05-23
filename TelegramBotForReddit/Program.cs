@@ -28,12 +28,10 @@ namespace TelegramBotForReddit
         private static IConfiguration _configuration;
         private static IRedditBotService _redditBotService;
 
-        public static async Task Main()
+        public static async Task Main(string[] args)
         {
             try
             {
-                _configuration = ConfigurationBuilder.Build();
-
                 var services = new ServiceCollection();
                 ConfigureServices(services);
                 await using var provider = services.BuildServiceProvider();
@@ -69,16 +67,18 @@ namespace TelegramBotForReddit
 
         private static void ConfigureServices(IServiceCollection services)
         {
+            _configuration = ConfigurationBuilder.Build();
+            
             services.AddLogging(logger =>
                 {
-                    ConfigureExtensions.AddNLog(logger, "nlog.config");
+                    logger.AddNLog("nlog.config");
                     logger.AddFilter("Microsoft", LogLevel.Warning);
                 })
                 .AddSingleton(ConfigureMapper())
                 .Configure<AppOptions>(_configuration.GetSection(AppOptions.App))
                 .Configure<CommandsOptions>(_configuration.GetSection(CommandsOptions.Command))
                 .Configure<RedditOptions>(_configuration.GetSection(RedditOptions.Reddit))
-                .AddSingleton<CommandList>();
+                .AddScoped<CommandList>();
             
             AddDbContext(services);
             AddHttpClients(services);

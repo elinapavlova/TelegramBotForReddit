@@ -61,6 +61,10 @@ namespace TelegramBotForReddit.Core.Commands
             isUserAdmin = await IsUserAdmin(user.Id);
             if (!isUserAdmin)
                 return $"Пользователь {userName} не является администратором.";
+            
+            var isUserSuperAdmin = await IsUserSuperAdmin(user.Id);
+            if (isUserSuperAdmin is true)
+                return $"Пользователь {userName} является суперадминистратором.";
 
             var admin = await CancelAdministrator(user.Id);
             if (admin is null) 
@@ -82,5 +86,8 @@ namespace TelegramBotForReddit.Core.Commands
 
         private async Task<AdministratorDto> CancelAdministrator(long userId)
             => await _administratorService.Delete(userId);
+        
+        private async Task<bool?> IsUserSuperAdmin(long userId)
+            => await _administratorService.IsUserSuperAdmin(userId);
     }
 }

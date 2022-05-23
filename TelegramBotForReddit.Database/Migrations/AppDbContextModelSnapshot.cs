@@ -14,7 +14,7 @@ namespace TelegramBotForReddit.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.12");
+                .HasAnnotation("ProductVersion", "5.0.14");
 
             modelBuilder.Entity("TelegramBotForReddit.Database.Models.AdministratorModel", b =>
                 {
