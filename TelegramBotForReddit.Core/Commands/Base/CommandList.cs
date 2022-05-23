@@ -46,11 +46,11 @@ namespace TelegramBotForReddit.Core.Commands.Base
                
                 new SubscribeCommand(commands[nameof(SubscribeCommand)], redditService, userService, userSubscribeService, subredditService, telegramHttpClient),
                 
-                new SubredditsCommand(commands[nameof(SubredditsCommand)], redditService, telegramHttpClient),
+                new GetSubredditsCommand(commands[nameof(GetSubredditsCommand)], redditService, telegramHttpClient),
                 
                 new UnsubscribeCommand(commands[nameof(UnsubscribeCommand)], userService, userSubscribeService, subredditService, telegramHttpClient),
                 
-                new SubscriptionsCommand(commands[nameof(SubscriptionsCommand)], userSubscribeService, userService, telegramHttpClient),
+                new GetSubscriptionsCommand(commands[nameof(GetSubscriptionsCommand)], userSubscribeService, userService, telegramHttpClient),
                 
                 new GetStatisticsCommand(commands[nameof(GetStatisticsCommand)], administratorService, userSubscribeService, userService, telegramHttpClient),
                 

@@ -10,14 +10,14 @@ using TelegramBotForReddit.Core.Services.Contracts;
 
 namespace TelegramBotForReddit.Core.Commands
 {
-    public class SubredditsCommand : BaseCommand
+    public class GetSubredditsCommand : BaseCommand
     {
         private readonly IRedditService _redditService;
         private readonly TelegramHttpClient _telegramHttpClient;
         public sealed override string Name { get; init; }
         
         
-        public SubredditsCommand
+        public GetSubredditsCommand
         (
             string commandName, 
             IRedditService redditService,
