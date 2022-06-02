@@ -129,7 +129,8 @@ namespace TelegramBotForReddit
                 .AddScoped<IAdministratorService, AdministratorService>()
                 .AddScoped<ISubredditService, SubredditService>()
                 .AddScoped<IRedditBotService, RedditBotService>()
-                .AddScoped<ISmtpSender, SmtpSender>();
+                .AddScoped<ISmtpSender, SmtpSender>()
+                .AddScoped<IWordCloudService, WordCloudService>();
         }
     }
 }

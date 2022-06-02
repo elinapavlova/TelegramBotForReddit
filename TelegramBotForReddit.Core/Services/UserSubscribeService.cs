@@ -75,5 +75,8 @@ namespace TelegramBotForReddit.Core.Services
 
         public async Task<int?> GetAverageNumberOfSubscribes()
             => await _userSubscribeRepository.GetAverageNumberOfSubscribes();
+
+        public async Task<List<WordCloudModel>> GetSubscribesNameCount()
+            => await _userSubscribeRepository.GetSubscribesNameCount();
     }
 }

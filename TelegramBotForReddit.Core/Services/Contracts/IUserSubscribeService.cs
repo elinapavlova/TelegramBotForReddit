@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TelegramBotForReddit.Core.Dto.Subreddit;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
+using TelegramBotForReddit.Database.Models;
 
 namespace TelegramBotForReddit.Core.Services.Contracts
 {
@@ -16,5 +17,6 @@ namespace TelegramBotForReddit.Core.Services.Contracts
         Task<List<UserSubscribeDto>> GetBySubredditName(string name);
         Task<List<SubredditStatisticsDto>> GetPopularestSubreddits();
         Task<int?> GetAverageNumberOfSubscribes();
+        Task<List<WordCloudModel>> GetSubscribesNameCount();
     }
 }

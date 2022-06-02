@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Reddit.Controllers;
 using Telegram.Bot;
@@ -62,6 +63,11 @@ namespace TelegramBotForReddit.Core.HttpClients
             await _bot.SendPhotoAsync(chatId, url, 
                 $"{post.Subreddit}\r\n{post.Title}\r\n ", 
                 replyMarkup: keyboard);
+        }
+        
+        public async Task SendPhotoMessage(long chatId, FileStream fileStream, string caption)
+        {
+            await _bot.SendPhotoAsync(chatId, fileStream, caption);
         }
     }
 }

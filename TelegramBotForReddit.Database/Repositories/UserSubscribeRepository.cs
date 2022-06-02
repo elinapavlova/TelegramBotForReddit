@@ -95,5 +95,17 @@ namespace TelegramBotForReddit.Database.Repositories
             int.TryParse(numberRound, out var result);
             return result;
         }
+
+        public async Task<List<WordCloudModel>> GetSubscribesNameCount()
+        {
+            var result = await _context.UserSubscribes.GroupBy(us => us.SubredditName)
+                .Select(us => new WordCloudModel
+                {
+                    Name = us.Key,
+                    Count = us.Count()
+                })
+                .ToListAsync();
+            return result;
+        }
     }
 }

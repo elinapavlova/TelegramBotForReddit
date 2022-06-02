@@ -18,13 +18,14 @@ namespace TelegramBotForReddit.Core.Commands.Base
             IMapper mapper,
             IUserSubscribeService userSubscribeService,
             IAdministratorService administratorService,
-            ISubredditService subredditService
+            ISubredditService subredditService,
+            IWordCloudService wordCloudService
         )
         {
             var commands = commandsOptions.Value.Commands;
             
             Commands = CreateCommandList(commandsOptions, redditService, userService, telegramHttpClient, mapper, 
-                userSubscribeService, administratorService, subredditService, commands);
+                userSubscribeService, administratorService, subredditService, wordCloudService, commands);
         }
 
         private static List<BaseCommand> CreateCommandList(
@@ -36,6 +37,7 @@ namespace TelegramBotForReddit.Core.Commands.Base
             IUserSubscribeService userSubscribeService, 
             IAdministratorService administratorService, 
             ISubredditService subredditService, 
+            IWordCloudService wordCloudService,
             IReadOnlyDictionary<string, string> commands)
         {
             return new List<BaseCommand>
@@ -56,7 +58,9 @@ namespace TelegramBotForReddit.Core.Commands.Base
                 
                 new MakeAdminCommand(commands[nameof(MakeAdminCommand)], administratorService, userService, telegramHttpClient),
                 
-                new CancelAdminCommand(commands[nameof(CancelAdminCommand)], administratorService, userService, telegramHttpClient)
+                new CancelAdminCommand(commands[nameof(CancelAdminCommand)], administratorService, userService, telegramHttpClient),
+                
+                new DrawWordCloudCommand(commands[nameof(DrawWordCloudCommand)], wordCloudService, telegramHttpClient)
             };
         }
 

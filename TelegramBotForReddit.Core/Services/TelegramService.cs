@@ -202,7 +202,7 @@ namespace TelegramBotForReddit.Core.Services
             // В reply-клавиатуре находятся команды, не требующие ввода параметра после названия
             var commandNames = new List<string>
             {
-                "/start", "/subreddits", "/subscriptions", "/using"
+                "/start", "/subreddits", "/subscriptions", "/using", "/wordcloud"
             };
             
             var isUserAdmin = await IsUserAdmin(userId);
