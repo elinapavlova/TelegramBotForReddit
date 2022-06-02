@@ -23,6 +23,7 @@ namespace TelegramBotForReddit.Core.Services
         private static RedditHttpClient _redditHttpClient;
         private static IRedditService _redditService;
         private readonly ISubredditService _subredditService;
+        private readonly ISmtpSender _smtpSender;
 
         public RedditBotService
         (
@@ -31,7 +32,8 @@ namespace TelegramBotForReddit.Core.Services
             RedditHttpClient redditHttpClient,
             ITelegramService telegramService,
             IRedditService redditService,
-            ISubredditService subredditService
+            ISubredditService subredditService,
+            ISmtpSender smtpSender
         )
         {
             _userSubscribeService = userSubscribeService;
@@ -40,6 +42,7 @@ namespace TelegramBotForReddit.Core.Services
             _telegramService = telegramService;
             _redditService = redditService;
             _subredditService = subredditService;
+            _smtpSender = smtpSender;
         }
 
         public async Task Work()
@@ -61,6 +64,7 @@ namespace TelegramBotForReddit.Core.Services
             catch (Exception e)
             {
                 Logger.Logger.LogError($"App error: {e.Message}");
+                await _smtpSender.SendMessage(e.Message);
             }
             finally
             {

@@ -28,6 +28,7 @@ namespace TelegramBotForReddit.Core.Services
         private readonly IUserService _userService;
         private readonly IAdministratorService _administratorService;
         private readonly TelegramHttpClient _telegramHttpClient;
+        private readonly ISmtpSender _smtpSender;
         
         public TelegramService
         (
@@ -36,7 +37,8 @@ namespace TelegramBotForReddit.Core.Services
             IUserSubscribeService userSubscribeService,
             IUserService userService,
             IAdministratorService administratorService,
-            TelegramHttpClient telegramHttpClient
+            TelegramHttpClient telegramHttpClient,
+            ISmtpSender smtpSender
         )
         {
             _commands = commands.Commands;
@@ -45,6 +47,7 @@ namespace TelegramBotForReddit.Core.Services
             _userService = userService;
             _administratorService = administratorService;
             _telegramHttpClient = telegramHttpClient;
+            _smtpSender = smtpSender;
         }
         
         public DefaultUpdateHandler CreateDefaultUpdateHandler()
@@ -73,7 +76,7 @@ namespace TelegramBotForReddit.Core.Services
             }
         }
         
-        private static Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        private async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
             var errorMessage = exception switch
             {
@@ -85,7 +88,7 @@ namespace TelegramBotForReddit.Core.Services
 
             Console.WriteLine(errorMessage);
             Logger.Logger.LogError($"Telegram API handling updates Error: {errorMessage}");
-            return Task.CompletedTask;
+            await _smtpSender.SendMessage(errorMessage);
         }
         
         private async Task BotOnMessageReceived(Message message)
@@ -110,6 +113,7 @@ namespace TelegramBotForReddit.Core.Services
                 Logger.Logger.LogError($"Telegram API receiving message Error: {e.Message}\r\n" +
                                  $"user : {message.From.Id} [ {message.From.Username} ]\r\n" +
                                  $"message : {message.Text}");
+                await _smtpSender.SendMessage(e.Message);
             }
         }
 
@@ -152,8 +156,9 @@ namespace TelegramBotForReddit.Core.Services
             catch(ApiRequestException ex)
             {
                 await _telegramHttpClient.SendTextMessage(user.UserId, CreateUnsuccessfulContentMessage(post), keyboard);
-                
-                Logger.Logger.LogError($"Telegram API upload content Error: {ex.ErrorCode}. {ex.Message} content: {media?.Url}");
+                var errorText = $"Telegram API upload content Error: {ex.ErrorCode}. {ex.Message} content: {media?.Url}";
+                Logger.Logger.LogError(errorText);
+                await _smtpSender.SendMessage(errorText);
             }
         }
 

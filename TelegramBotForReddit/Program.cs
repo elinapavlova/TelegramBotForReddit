@@ -78,6 +78,7 @@ namespace TelegramBotForReddit
                 .Configure<AppOptions>(_configuration.GetSection(AppOptions.App))
                 .Configure<CommandsOptions>(_configuration.GetSection(CommandsOptions.Command))
                 .Configure<RedditOptions>(_configuration.GetSection(RedditOptions.Reddit))
+                .Configure<SmtpClientOptions>(_configuration.GetSection(SmtpClientOptions.SmtpClient))
                 .AddScoped<CommandList>();
             
             AddDbContext(services);
@@ -127,7 +128,8 @@ namespace TelegramBotForReddit
                 .AddScoped<IUserSubscribeService, UserSubscribeService>()
                 .AddScoped<IAdministratorService, AdministratorService>()
                 .AddScoped<ISubredditService, SubredditService>()
-                .AddScoped<IRedditBotService, RedditBotService>();
+                .AddScoped<IRedditBotService, RedditBotService>()
+                .AddScoped<ISmtpSender, SmtpSender>();
         }
     }
 }
