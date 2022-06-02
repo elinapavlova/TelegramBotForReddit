@@ -64,6 +64,7 @@ namespace TelegramBotForReddit.Core.Commands
 
             var admin = await MakeAdministrator(user.Id);
             Logger.Logger.LogInfo($"user {fromId} [{fromName}] made admin user {user.Id} [{userName}]");
+
             await InformUser(user.Id, fromName);
             
             return admin == null 
