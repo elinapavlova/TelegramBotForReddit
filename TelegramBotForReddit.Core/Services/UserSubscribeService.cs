@@ -4,21 +4,31 @@ using System.Threading.Tasks;
 using AutoMapper;
 using TelegramBotForReddit.Core.Dto.Subreddit;
 using TelegramBotForReddit.Core.Dto.UserSubscribe;
+using TelegramBotForReddit.Core.Handlers;
 using TelegramBotForReddit.Core.Services.Contracts;
 using TelegramBotForReddit.Database.Models;
 using TelegramBotForReddit.Database.Repositories.Contracts;
 
 namespace TelegramBotForReddit.Core.Services
 {
-    public class UserSubscribeService : IUserSubscribeService
+    public sealed class UserSubscribeService : IUserSubscribeService
     {
         private readonly IUserSubscribeRepository _userSubscribeRepository;
         private readonly IMapper _mapper;
+        private readonly ISubredditService _subredditService;
+        private readonly IRedditService _redditService;
         
-        public UserSubscribeService(IUserSubscribeRepository userSubscribeRepository, IMapper mapper)
+        public UserSubscribeService(
+            IUserSubscribeRepository userSubscribeRepository, 
+            IMapper mapper,
+            ISubredditService subredditService,
+            IRedditService redditService
+            )
         {
             _userSubscribeRepository = userSubscribeRepository;
             _mapper = mapper;
+            _subredditService = subredditService;
+            _redditService = redditService;
         }
 
         public async Task<UserSubscribeDto> Subscribe(long userId, string subredditName)
@@ -40,6 +50,8 @@ namespace TelegramBotForReddit.Core.Services
             };
 
             var result = _mapper.Map<UserSubscribeDto>(await _userSubscribeRepository.Create(userSubscribe));
+            var handler = new SubredditHandler(_subredditService, _redditService);
+            await handler.AddSubreddit(subredditName);
             return result;
         }
 
@@ -78,5 +90,8 @@ namespace TelegramBotForReddit.Core.Services
 
         public async Task<List<WordCloudModel>> GetSubscribesNameCount()
             => await _userSubscribeRepository.GetSubscribesNameCount();
+
+        public async Task<List<string>> GetSubredditNames()
+            => await _userSubscribeRepository.GetSubredditNames();
     }
 }

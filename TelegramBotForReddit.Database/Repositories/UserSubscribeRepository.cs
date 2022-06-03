@@ -107,5 +107,12 @@ namespace TelegramBotForReddit.Database.Repositories
                 .ToListAsync();
             return result;
         }
+        
+        // Названия сабреддитов, на которые есть актуальные подписки
+        public async Task<List<string>> GetSubredditNames()
+            => await _context.UserSubscribes.Where(us => us.DateUnsubscribed == null)
+                .GroupBy(us => us.SubredditName)
+                .Select(us => us.Key)
+                .ToListAsync();
     }
 }

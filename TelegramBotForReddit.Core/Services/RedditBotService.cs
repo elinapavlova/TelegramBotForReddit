@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace TelegramBotForReddit.Core.Services
         private static IRedditService _redditService;
         private readonly ISubredditService _subredditService;
         private readonly ISmtpSender _smtpSender;
+        public static List<string> SubredditsName = new ();
 
         public RedditBotService
         (
@@ -56,7 +58,7 @@ namespace TelegramBotForReddit.Core.Services
                 Console.WriteLine($"{DateTime.Now} : Bot started.");
                 Logger.Logger.LogInfo($"Bot started {DateTime.Now}");
 
-                CheckNewPosts();
+                await CheckNewPosts();
 
                 Console.ReadLine();
                 cts.Cancel();
@@ -85,16 +87,19 @@ namespace TelegramBotForReddit.Core.Services
             _bot.StartReceiving(_telegramService.CreateDefaultUpdateHandler(), cts.Token);
         }
         
-        private static void CheckNewPosts()
+        private static async Task CheckNewPosts()
         {
             var reddit = _redditHttpClient.CreateRedditClient();
-            var subreddits = _redditService.GetSubreddits("popular");
-            
-            foreach (var subreddit in subreddits.Select(subreddit => reddit.Subreddit(subreddit.Name)))
+            while (true)
             {
-                subreddit.Posts.GetNew();
-                subreddit.Posts.MonitorNew();
-                subreddit.Posts.NewUpdated += NewPostsUpdated;
+                SubredditsName = await _userSubscribeService.GetSubredditNames();
+                
+                foreach (var subreddit in SubredditsName.Select(subreddit => reddit.Subreddit(subreddit)).ToList())
+                {
+                    subreddit.Posts.GetNew();
+                    subreddit.Posts.MonitorNew();
+                    subreddit.Posts.NewUpdated += NewPostsUpdated;
+                }                
             }
         }
 

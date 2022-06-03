@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AutoMapper;
 using TelegramBotForReddit.Core.Dto.Subreddit;
 using TelegramBotForReddit.Core.Services.Contracts;
