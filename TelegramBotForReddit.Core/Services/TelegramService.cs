@@ -172,6 +172,12 @@ namespace TelegramBotForReddit.Core.Services
             return await _administratorService.IsUserAdmin(userId);
         }
         
+        private async Task<bool> IsUserSuperAdmin(long userId)
+        {
+            var isUserSuperAdmin = await _administratorService.IsUserSuperAdmin(userId);
+            return isUserSuperAdmin == true;
+        }
+        
         private async Task<ReplyKeyboardMarkup> GetReplyKeyboard(long userId)
         {
             var keyboard = new ReplyKeyboardMarkup();
@@ -208,6 +214,10 @@ namespace TelegramBotForReddit.Core.Services
             var isUserAdmin = await IsUserAdmin(userId);
             if (isUserAdmin)
                 commandNames.Add("/statistics");
+            
+            var isUserSuperAdmin = await IsUserSuperAdmin(userId);
+            if (isUserSuperAdmin)
+                commandNames.Add("/admins");
             
             return commandNames;
         }

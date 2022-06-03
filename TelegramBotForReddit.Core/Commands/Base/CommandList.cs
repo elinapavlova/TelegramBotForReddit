@@ -60,7 +60,9 @@ namespace TelegramBotForReddit.Core.Commands.Base
                 
                 new CancelAdminCommand(commands[nameof(CancelAdminCommand)], administratorService, userService, telegramHttpClient),
                 
-                new DrawWordCloudCommand(commands[nameof(DrawWordCloudCommand)], wordCloudService, telegramHttpClient)
+                new DrawWordCloudCommand(commands[nameof(DrawWordCloudCommand)], wordCloudService, telegramHttpClient),
+                
+                new GetAdministrators(commands[nameof(GetAdministrators)], administratorService, userService, telegramHttpClient)
             };
         }
 

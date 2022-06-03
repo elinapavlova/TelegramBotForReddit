@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TelegramBotForReddit.Database.Models;
@@ -43,5 +44,8 @@ namespace TelegramBotForReddit.Database.Repositories
             var user = await GetByAdminId(id);
             return user?.IsSuperAdmin;
         }
+
+        public async Task<List<long>> GetAdministratorIds()
+            => await _context.Administrators.Select(a => a.UserId).ToListAsync();
     }
 }

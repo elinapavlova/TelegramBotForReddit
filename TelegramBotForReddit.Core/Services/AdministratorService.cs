@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using AutoMapper;
 using TelegramBotForReddit.Core.Dto.Administrator;
 using TelegramBotForReddit.Core.Services.Contracts;
@@ -25,7 +26,7 @@ namespace TelegramBotForReddit.Core.Services
             _userService = userService;
         }
 
-        public async Task<AdministratorDto> GetByAdminId(long id) 
+        private async Task<AdministratorDto> GetByAdminId(long id) 
             => _mapper.Map<AdministratorDto>(await _administratorRepository.GetByAdminId(id));
         
         public async Task<AdministratorDto> Delete(long id)
@@ -58,5 +59,8 @@ namespace TelegramBotForReddit.Core.Services
         
         public async Task<bool?> IsUserSuperAdmin(long id)
             => await _administratorRepository.IsUserSuperAdmin(id);
+
+        public async Task<List<long>> GetAdministratorIds()
+            => await _administratorRepository.GetAdministratorIds();
     }
 }
