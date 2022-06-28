@@ -43,11 +43,11 @@ namespace TelegramBotForReddit.Core.Commands
             {
                 if (name != null)
                 {
-                    message += $"{id} [@{name}]";
+                    message += $"{id} [@{name}]\r\n";
                 }
                 else
                 {
-                    message += $"{id}";
+                    message += $"{id}\r\n";
                 }
             }
 
