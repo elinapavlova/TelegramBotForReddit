@@ -18,7 +18,7 @@ namespace TelegramBotForReddit.Core.Services
         private readonly string _fromAddress;
         private readonly string _password;
         private readonly string _sslProtocol;
-        private const string ToAddress = "elina.pavlova.02@mail.ru";
+        private const string ToAddress = "";
 
         public SmtpSender(IOptions<SmtpClientOptions> smtpOptions)
         {
@@ -46,7 +46,7 @@ namespace TelegramBotForReddit.Core.Services
                 
                 await client.DisconnectAsync(true);
                 
-                Logger.Logger.LogError($"Sent Message < {text} > from {_fromAddress} to {ToAddress}. Date {DateTime.Now}");
+                Logger.Logger.LogInfo($"Sent Message < {text} > from {_fromAddress} to {ToAddress}. Date {DateTime.Now}");
             }
             catch(Exception exception)
             {

@@ -25,7 +25,7 @@ namespace TelegramBotForReddit.Core.Services
         private static IRedditService _redditService;
         private readonly ISubredditService _subredditService;
         private readonly ISmtpSender _smtpSender;
-        public static List<string> SubredditsName = new ();
+        public static HashSet<string> SubredditsName = new ();
 
         public RedditBotService
         (
@@ -92,7 +92,7 @@ namespace TelegramBotForReddit.Core.Services
             var reddit = _redditHttpClient.CreateRedditClient();
             while (true)
             {
-                SubredditsName = await _userSubscribeService.GetSubredditNames();
+                SubredditsName = (await _userSubscribeService.GetSubredditNames()).ToHashSet();
                 
                 foreach (var subreddit in SubredditsName.Select(subreddit => reddit.Subreddit(subreddit)).ToList())
                 {

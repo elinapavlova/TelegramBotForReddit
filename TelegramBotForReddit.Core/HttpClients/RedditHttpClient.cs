@@ -31,10 +31,7 @@ namespace TelegramBotForReddit.Core.HttpClients
 
         public IEnumerable<Reddit.Controllers.Subreddit> GetSubredditsByCategory(string category)
         {
-            using var httpclient = _clientFactory.CreateClient("RedditClient");
-
             var reddit = new RedditClient(_appId, _appRefreshToken, _appSecret);
-            
             var subreddits = reddit.GetSubreddits(category);
             return subreddits;
         }
